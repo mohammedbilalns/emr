@@ -1,23 +1,26 @@
 {
-  "name": "emr-appointments",
-  "private": true,
-  "workspaces": ["apps/*", "packages/*"],
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
-    "dev:api": "npm run dev -w apps/server",
-    "dev:web": "npm run dev -w apps/client",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "typecheck": "npm run typecheck -w apps/server && npm run typecheck -w apps/client",
-    "seed": "npm run seed -w apps/server"
-  },
-  "keywords": [],
-  "type": "commonjs",
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
-    "concurrently": "^10.0.6",
-    "typescript": "^7.0.2"
-  }
+	"name": "emr-appointments",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+		"dev:api": "npm run dev -w apps/server",
+		"dev:web": "npm run dev -w apps/client",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"typecheck": "npm run typecheck -w apps/server && npm run typecheck -w apps/client",
+		"seed": "npm run seed -w apps/server"
+	},
+	"keywords": [],
+	"type": "commonjs",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"concurrently": "^10.0.6",
+		"typescript": "^7.0.2"
+	}
 }

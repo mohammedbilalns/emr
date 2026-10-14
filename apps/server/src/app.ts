@@ -8,21 +8,25 @@ import { notFoundHandler } from "./middlewares/notfound.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
 
 export function createApp() {
-  const app = express();
+	const app = express();
 
-  app.disable("x-powered-by");
-  app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
-  app.use(express.json({ limit: "100kb" })); 
-  app.use(cookieParser());
-  app.use(requestLogger);
+	app.disable("x-powered-by");
+	app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+	app.use(express.json({ limit: "100kb" }));
+	app.use(cookieParser());
+	app.use(requestLogger);
 
-  app.get(`${API_PREFIX}/health`, (_req, res) => {
-    res.status(200).json({ success: true, message: "OK", data: { uptime: process.uptime() } });
-  });
+	app.get(`${API_PREFIX}/health`, (_req, res) => {
+		res.status(200).json({
+			success: true,
+			message: "OK",
+			data: { uptime: process.uptime() },
+		});
+	});
 
-  // app.use(`${API_PREFIX}/auth`, authRoutes);
+	// app.use(`${API_PREFIX}/auth`, authRoutes);
 
-  app.use(notFoundHandler);
-  app.use(errorHandler);
-  return app;
+	app.use(notFoundHandler);
+	app.use(errorHandler);
+	return app;
 }
