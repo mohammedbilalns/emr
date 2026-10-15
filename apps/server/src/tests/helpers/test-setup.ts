@@ -2,9 +2,9 @@ import type { Role } from "@emr/shared";
 import type express from "express";
 import { createApp } from "../../app";
 import { connectDatabase } from "../../config/db";
-import { Doctor } from "../../models/doctor.model";
-import { Patient } from "../../models/patient.model";
-import { User } from "../../models/user.model";
+import { User } from "../../modules/auth";
+import { Doctor } from "../../modules/doctors";
+import { Patient } from "../../modules/patients";
 import { signAccessToken } from "../../utils/jwt";
 
 let cachedApp: express.Application | null = null;

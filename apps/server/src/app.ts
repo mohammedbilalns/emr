@@ -4,16 +4,15 @@ import express from "express";
 import helmet from "helmet";
 import { API_PREFIX } from "./config/constants";
 import { env } from "./config/env";
-import { healthHandler } from "./controllers/health.controller";
 import { errorHandler } from "./middlewares/error-handler.middleware";
 import { notFoundHandler } from "./middlewares/notfound.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
-import appointmentRoutes from "./routes/v1/appointments.routes";
-import authRoutes from "./routes/v1/auth.routes";
-import doctorRoutes from "./routes/v1/doctors.routes";
-import patientRoutes from "./routes/v1/patients.routes";
-import slotRoutes from "./routes/v1/slots.routes";
-import staffRoutes from "./routes/v1/staff.routes";
+import { appointmentRoutes } from "./modules/appointments";
+import { authRoutes } from "./modules/auth";
+import { doctorRoutes, staffRoutes } from "./modules/doctors";
+import { healthHandler } from "./modules/health";
+import { patientRoutes } from "./modules/patients";
+import { slotRoutes } from "./modules/slots";
 
 /**
  * Initializes Express application with security middleware, request logging,

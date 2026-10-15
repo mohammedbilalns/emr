@@ -1,8 +1,8 @@
 import type express from "express";
 import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
-import { Appointment } from "../../models/appointment.model";
-import { Doctor } from "../../models/doctor.model";
+import { Appointment } from "../../modules/appointments";
+import { Doctor } from "../../modules/doctors";
 import {
 	getAuthHeader,
 	getTestApp,
