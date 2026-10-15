@@ -1,8 +1,8 @@
 import { loginSchema } from "@emr/shared";
 import { Router } from "express";
-import { login, logout, me, refresh } from "../controllers/auth.controller";
-import { requireAuth } from "../middlewares/auth.middleware";
-import { validate } from "../middlewares/validate.middleware";
+import { login, logout, me, refresh } from "../../controllers/auth.controller";
+import { requireAuth } from "../../middlewares/auth.middleware";
+import { validate } from "../../middlewares/validate.middleware";
 
 const router = Router();
 
