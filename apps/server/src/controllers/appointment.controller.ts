@@ -88,3 +88,18 @@ export async function markArrivedHandler(
 		message: "Patient marked as arrived",
 	});
 }
+
+export async function completeAppointmentHandler(
+	req: Request,
+	res: Response,
+): Promise<Response> {
+	const user = req.user as AuthUser;
+	const params = req.validated?.params as { id: string };
+	const appointment = await appointmentService.completeAppointment(
+		params.id,
+		user,
+	);
+	return sendSuccess(res, appointment, {
+		message: "Appointment marked as completed",
+	});
+}

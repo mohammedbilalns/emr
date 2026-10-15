@@ -26,6 +26,7 @@ import { Counter } from "../models/counter.model";
 import { Doctor } from "../models/doctor.model";
 import { Patient } from "../models/patient.model";
 import { audit } from "../utils/audit";
+import { escapeRegex } from "../utils/regex";
 import { generateSlots } from "./slot.service";
 
 interface ListResult {
@@ -218,7 +219,9 @@ export async function listAppointments(
 
 	if (query.department) filter.department = query.department;
 	if (query.status) filter.status = query.status;
-	if (query.mobile) filter.patientMobile = query.mobile;
+	if (query.mobile) {
+		filter.patientMobile = new RegExp(`^${escapeRegex(query.mobile)}`);
+	}
 	if (query.dateFrom || query.dateTo) {
 		// Lexicographic comparison is correct for YYYY-MM-DD strings — another string-date win.
 		filter.date = {
@@ -269,15 +272,25 @@ export async function updateAppointment(
 	const existing = await Appointment.findOne({ _id: id, active: true });
 	if (!existing) throw new NotFoundError("Appointment not found");
 
+	if (actor.role === "DOCTOR") {
+		const doctor = await Doctor.findOne({ user: actor.id });
+		if (!doctor || String(existing.doctor) !== doctor.id) {
+			throw new NotFoundError("Appointment not found");
+		}
+	}
+
+	const updatePayload: Record<string, unknown> = { updatedBy: actor.id };
+	// When actor is a DOCTOR, strip purpose and allow only consultation notes
+	if (actor.role !== "DOCTOR" && body.purpose !== undefined) {
+		updatePayload.purpose = body.purpose;
+	}
+	if (body.notes !== undefined) {
+		updatePayload.notes = body.notes;
+	}
+
 	const updated = await Appointment.findByIdAndUpdate(
 		id,
-		{
-			$set: {
-				...(body.purpose !== undefined && { purpose: body.purpose }),
-				...(body.notes !== undefined && { notes: body.notes }),
-			},
-			updatedBy: actor.id,
-		},
+		{ $set: updatePayload },
 		{ returnDocument: "after" },
 	);
 	if (!updated) throw new NotFoundError("Appointment not found");
@@ -301,6 +314,13 @@ async function transitionStatus(
 ): Promise<AppointmentDto> {
 	const appointment = await Appointment.findById(id);
 	if (!appointment) throw new NotFoundError("Appointment not found");
+
+	if (actor.role === "DOCTOR") {
+		const doctor = await Doctor.findOne({ user: actor.id });
+		if (!doctor || String(appointment.doctor) !== doctor.id) {
+			throw new NotFoundError("Appointment not found");
+		}
+	}
 
 	if (!STATUS_TRANSITIONS[appointment.status].includes(to)) {
 		throw new InvalidStatusTransitionError(appointment.status, to);

@@ -8,6 +8,7 @@ import { Router } from "express";
 import { z } from "zod";
 import {
 	cancelAppointmentHandler,
+	completeAppointmentHandler,
 	createAppointmentHandler,
 	getAppointmentHandler,
 	listAppointmentsHandler,
@@ -47,7 +48,7 @@ router.get(
 router.put(
 	"/:id",
 	requireAuth,
-	requireRoles("RECEPTIONIST", "SUPER_ADMIN"),
+	requireRoles("RECEPTIONIST", "SUPER_ADMIN", "DOCTOR"),
 	validate({ params: idParams, body: updateAppointmentSchema }),
 	updateAppointmentHandler,
 );
@@ -66,6 +67,14 @@ router.post(
 	requireRoles("RECEPTIONIST", "SUPER_ADMIN"),
 	validate({ params: idParams }),
 	markArrivedHandler,
+);
+
+router.post(
+	"/:id/complete",
+	requireAuth,
+	requireRoles("DOCTOR", "SUPER_ADMIN"),
+	validate({ params: idParams }),
+	completeAppointmentHandler,
 );
 
 export default router;
