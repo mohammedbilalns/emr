@@ -8,13 +8,6 @@ interface RequestSchemas {
 	query?: ZodType;
 }
 
-declare module "express-serve-static-core" {
-	interface Request {
-		validated?: { body?: unknown; params?: unknown; query?: unknown };
-		user?: { id: string; role: string };
-	}
-}
-
 export const validate =
 	(schemas: RequestSchemas) =>
 	(req: Request, _res: Response, next: NextFunction): void => {

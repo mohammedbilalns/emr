@@ -3,11 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import { ForbiddenError, UnauthorizedError } from "../errors/base.error";
 
 export function requireRoles(...roles: Role[]) {
-	return (
-		req: Request & { user: { role: Role } },
-		_res: Response,
-		next: NextFunction,
-	): void => {
+	return (req: Request, _res: Response, next: NextFunction): void => {
 		if (!req.user) {
 			next(new UnauthorizedError());
 			return;

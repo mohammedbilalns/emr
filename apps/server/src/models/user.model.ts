@@ -14,7 +14,12 @@ interface IUserMethods {
 	comparePassword(candidate: string): Promise<boolean>;
 }
 
-type UserModel = Model<IUser, Record<string, never>, IUserMethods>;
+interface IUserStatics {
+	hashPassword(plain: string): Promise<string>;
+}
+
+type UserModel = Model<IUser, Record<string, never>, IUserMethods> &
+	IUserStatics;
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 	{
