@@ -27,6 +27,9 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provides authenticated session state, role validation helpers, and login/logout lifecycle methods.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<AuthUser | null>(null);
 	const [status, setStatus] = useState<AuthStatus>("loading");
@@ -125,6 +128,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	);
 }
 
+/**
+ * Hook to access current authentication state and actions.
+ */
 export function useAuth(): AuthContextType {
 	const context = useContext(AuthContext);
 	if (!context) {

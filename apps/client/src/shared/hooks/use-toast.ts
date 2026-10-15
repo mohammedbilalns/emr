@@ -19,6 +19,9 @@ function notifyListeners(): void {
 	}
 }
 
+/**
+ * Imperatively emits an auto-dismissing toast notification.
+ */
 export function showToast(
 	message: string,
 	type: ToastType = "info",
@@ -46,6 +49,9 @@ export function dismissToast(id: string): void {
 	notifyListeners();
 }
 
+/**
+ * Hook providing access to active toast notifications and helper trigger methods.
+ */
 export function useToast() {
 	const [toasts, setToasts] = useState<ToastMessage[]>(memoryToasts);
 

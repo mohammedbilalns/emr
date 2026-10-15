@@ -19,6 +19,9 @@ interface QueuedRequest {
 let isRefreshing = false;
 let failedQueue: QueuedRequest[] = [];
 
+/**
+ * Resolves or rejects requests that were queued while refreshing the access token.
+ */
 function processQueue(
 	error: unknown | null,
 	token: string | null = null,
@@ -33,6 +36,9 @@ function processQueue(
 	failedQueue = [];
 }
 
+/**
+ * Pre-configured Axios instance for EMR API endpoints with credentials and automatic token refresh.
+ */
 export const apiClient = axios.create({
 	baseURL: "/api/v1",
 	withCredentials: true,
@@ -43,6 +49,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
 	(config: InternalAxiosRequestConfig) => {
+		// Attach the current in-memory access token to outgoing requests
 		const token = tokenManager.getToken();
 		if (token) {
 			config.headers.set("Authorization", `Bearer ${token}`);
@@ -66,12 +73,14 @@ apiClient.interceptors.response.use(
 		const status = error.response?.status;
 		const url = originalRequest.url || "";
 
+		// Avoid infinite loops by not attempting to refresh auth endpoints
 		const isAuthEndpoint =
 			url.includes("/auth/login") ||
 			url.includes("/auth/refresh") ||
 			url.includes("/auth/logout");
 
 		if (status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+			// Queue concurrent requests while a token refresh is already in-flight
 			if (isRefreshing) {
 				return new Promise<string>((resolve, reject) => {
 					failedQueue.push({ resolve, reject });
@@ -102,6 +111,7 @@ apiClient.interceptors.response.use(
 			} catch (refreshErr) {
 				processQueue(refreshErr, null);
 				tokenManager.clearToken();
+				// Broadcast session expiration so AuthContext can clean up user state
 				if (typeof window !== "undefined") {
 					window.dispatchEvent(new CustomEvent("emr:auth:expired"));
 				}

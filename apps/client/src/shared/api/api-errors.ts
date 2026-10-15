@@ -6,6 +6,9 @@ export interface FieldError {
 	message: string;
 }
 
+/**
+ * Client-side error wrapper preserving HTTP status codes and field-level validation errors.
+ */
 export class ApiClientError extends Error {
 	public readonly statusCode?: number;
 	public readonly fieldErrors: FieldError[];
@@ -33,6 +36,9 @@ function isApiErrorPayload(data: unknown): data is ApiError {
 	);
 }
 
+/**
+ * Normalizes Axios errors, API error payloads, or runtime exceptions into a uniform ApiClientError.
+ */
 export function normalizeError(error: unknown): ApiClientError {
 	if (error instanceof ApiClientError) {
 		return error;
@@ -111,6 +117,9 @@ export function normalizeError(error: unknown): ApiClientError {
 	return new ApiClientError("An unexpected error occurred");
 }
 
+/**
+ * Resolves a user-facing error message string from an unknown caught error.
+ */
 export function getErrorMessage(
 	error: unknown,
 	fallback = "An error occurred",

@@ -7,6 +7,10 @@ import {
 import { useToast } from "../../../shared/hooks/use-toast";
 import { bookAppointmentApi } from "../api/scheduler.api";
 
+/**
+ * Mutation hook for booking an appointment slot.
+ * Automatically invalidates slot and dashboard caches, with targeted 409 conflict handling.
+ */
 export function useBookSlot(onSuccessCallback?: () => void) {
 	const queryClient = useQueryClient();
 	const toast = useToast();

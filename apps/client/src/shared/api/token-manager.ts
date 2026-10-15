@@ -3,6 +3,10 @@ type TokenListener = (token: string | null) => void;
 let inMemoryAccessToken: string | null = null;
 const listeners = new Set<TokenListener>();
 
+/**
+ * In-memory manager for short-lived access tokens.
+ * Storing tokens in memory instead of localStorage prevents persistent token theft via XSS.
+ */
 export const tokenManager = {
 	getToken(): string | null {
 		return inMemoryAccessToken;

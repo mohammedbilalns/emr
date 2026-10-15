@@ -3,9 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/Spinner";
 
 /**
- * GuestRoute ensures that authenticated users cannot access guest-only routes
- * such as the login page. Any authenticated user attempting to navigate to or
- * move back to /login will be immediately redirected to /dashboard.
+ * Route guard that restricts guest-only pages (such as /login) from authenticated users.
+ * Redirects authenticated sessions directly to /dashboard.
  */
 export function GuestRoute() {
 	const { isAuthenticated, isLoading } = useAuth();

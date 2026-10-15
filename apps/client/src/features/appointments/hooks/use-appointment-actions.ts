@@ -9,6 +9,10 @@ import {
 	updateAppointmentApi,
 } from "../api/appointments.api";
 
+/**
+ * Mutations for appointment lifecycle actions (arrived, completed, cancelled, notes update),
+ * synchronizing appointment and slot query caches upon completion.
+ */
 export function useAppointmentActions() {
 	const queryClient = useQueryClient();
 	const toast = useToast();

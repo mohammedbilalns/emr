@@ -11,6 +11,10 @@ export interface RoleGuardProps {
 	fallback?: "forbidden" | "redirect";
 }
 
+/**
+ * Restricts access to users with specified clinical roles.
+ * Displays an access-restricted message or redirects to /dashboard based on the fallback prop.
+ */
 export function RoleGuard({
 	allowedRoles,
 	children,
@@ -40,7 +44,7 @@ export function RoleGuard({
 					this clinical management view.
 				</p>
 				<Link to="/dashboard">
-					<Button variant="outline" size="sm">
+					<Button variant="secondary" size="sm">
 						Return to Dashboard
 					</Button>
 				</Link>

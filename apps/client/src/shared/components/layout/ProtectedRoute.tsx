@@ -2,6 +2,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/Spinner";
 
+/**
+ * Route guard that requires active authentication.
+ * Redirects unauthenticated users to /login, preserving the intended destination in route state.
+ */
 export function ProtectedRoute() {
 	const { isAuthenticated, isLoading } = useAuth();
 	const location = useLocation();
