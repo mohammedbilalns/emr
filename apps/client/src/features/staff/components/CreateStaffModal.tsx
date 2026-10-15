@@ -80,7 +80,7 @@ export function CreateStaffModal({
 				</div>
 			}
 		>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
 						{displayError}
@@ -92,7 +92,6 @@ export function CreateStaffModal({
 					placeholder="e.g. Clara Oswald"
 					value={name}
 					onChange={(e) => setName(e.target.value)}
-					required
 				/>
 
 				<Input
@@ -101,7 +100,6 @@ export function CreateStaffModal({
 					placeholder="clara@emr.local"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
-					required
 				/>
 
 				<Input
@@ -110,7 +108,6 @@ export function CreateStaffModal({
 					placeholder="••••••••••••"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
-					required
 				/>
 
 				<p className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
