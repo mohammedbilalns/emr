@@ -23,13 +23,16 @@ export abstract class BaseError extends Error {
 
 export class ValidationError extends BaseError {
 	readonly statusCode = HttpStatus.BAD_REQUEST;
-	constructor(message = ErrorMessages.VALIDATION, details?: FieldIssue[]) {
+	constructor(
+		message: string = ErrorMessages.VALIDATION,
+		details?: FieldIssue[],
+	) {
 		super(message, "VALIDATION_ERROR", details);
 	}
 }
 export class UnauthorizedError extends BaseError {
 	readonly statusCode = HttpStatus.UNAUTHORIZED;
-	constructor(message = ErrorMessages.UNAUTHORIZED) {
+	constructor(message: string = ErrorMessages.UNAUTHORIZED) {
 		super(message, "UNAUTHORIZED");
 	}
 }
