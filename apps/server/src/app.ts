@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import { API_PREFIX } from "./config/constants";
 import { env } from "./config/env";
 import { errorHandler } from "./middlewares/error-handler.middleware";
@@ -21,6 +22,9 @@ export function createApp() {
 
 	// Disable the "X-Powered-By" header for security
 	app.disable("x-powered-by");
+
+	// Security headers on every response
+	app.use(helmet());
 
 	// Enable CORS with credentials for frontend
 	app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
