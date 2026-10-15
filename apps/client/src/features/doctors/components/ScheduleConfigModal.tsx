@@ -179,7 +179,11 @@ export function ScheduleConfigModal({
 				</div>
 			}
 		>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-5 text-xs">
+			<form
+				onSubmit={handleSubmit}
+				noValidate
+				className="flex flex-col gap-5 text-xs"
+			>
 				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
 						{displayError}

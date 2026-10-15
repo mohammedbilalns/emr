@@ -1,10 +1,9 @@
 import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
-import { Appointment } from "../models/appointment.model";
-import { Counter } from "../models/counter.model";
-import { Doctor } from "../models/doctor.model";
-import { Patient } from "../models/patient.model";
-import { User } from "../models/user.model";
+import { Appointment } from "../modules/appointments";
+import { User } from "../modules/auth";
+import { Doctor } from "../modules/doctors";
+import { Counter, Patient } from "../modules/patients";
 import { hashPassword } from "../utils/hash";
 
 const receptionist = {

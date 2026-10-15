@@ -156,7 +156,7 @@ export function BookingModal({
 				</div>
 			}
 		>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-5">
+			<form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
 				{serverError && (
 					<div className="flex items-center gap-3 p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-medium">
 						<AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
@@ -245,7 +245,6 @@ export function BookingModal({
 							placeholder="e.g. Jane Doe"
 							value={newName}
 							onChange={(e) => setNewName(e.target.value)}
-							required
 							error={fieldErrors.name}
 						/>
 
@@ -257,7 +256,6 @@ export function BookingModal({
 								maxLength={10}
 								value={newMobile}
 								onChange={(e) => setNewMobile(e.target.value)}
-								required
 								error={fieldErrors.mobile}
 							/>
 

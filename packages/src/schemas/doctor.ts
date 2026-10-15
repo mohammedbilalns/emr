@@ -56,10 +56,10 @@ export const scheduleSchema = z
 	});
 
 export const createDoctorSchema = z.object({
-	name: z.string().min(2).max(80),
+	name: z.string().trim().min(2).max(80),
 	email: z.email(),
 	password: z.string().min(8),
-	department: z.string().min(2).max(60),
+	department: z.string().trim().min(2).max(60),
 	schedule: scheduleSchema,
 });
 export type CreateDoctorBody = z.infer<typeof createDoctorSchema>;
@@ -72,7 +72,7 @@ export type UpdateDoctorScheduleBody = z.infer<
 >;
 
 export const createStaffSchema = z.object({
-	name: z.string().min(2).max(80),
+	name: z.string().trim().min(2).max(80),
 	email: z.email(),
 	password: z.string().min(8),
 });

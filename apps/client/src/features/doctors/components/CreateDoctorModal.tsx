@@ -93,7 +93,7 @@ export function CreateDoctorModal({
 				</div>
 			}
 		>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
 						{displayError}
@@ -105,7 +105,6 @@ export function CreateDoctorModal({
 					placeholder="e.g. Dr. Robert House"
 					value={name}
 					onChange={(e) => setName(e.target.value)}
-					required
 				/>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -115,7 +114,6 @@ export function CreateDoctorModal({
 						placeholder="dr.house@emr.local"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						required
 					/>
 
 					<Input
@@ -124,7 +122,6 @@ export function CreateDoctorModal({
 						placeholder="••••••••••••"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
-						required
 					/>
 				</div>
 
@@ -134,7 +131,6 @@ export function CreateDoctorModal({
 						placeholder="e.g. Cardiology, Neurology"
 						value={department}
 						onChange={(e) => setDepartment(e.target.value)}
-						required
 					/>
 
 					<Select

@@ -27,7 +27,7 @@ export function LoginForm() {
 		setFormError(null);
 		setFieldErrors({});
 
-		const validation = loginSchema.safeParse({ email, password });
+		const validation = loginSchema.safeParse({ email: email.trim(), password });
 		if (!validation.success) {
 			const errors: Record<string, string> = {};
 			for (const issue of validation.error.issues) {
@@ -77,7 +77,7 @@ export function LoginForm() {
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 				<Input
 					label="Work Email Address"
 					type="email"
@@ -86,7 +86,6 @@ export function LoginForm() {
 					onChange={(e) => setEmail(e.target.value)}
 					placeholder="clinician@emr.local"
 					autoComplete="email"
-					required
 					leftIcon={<Mail className="h-4 w-4" />}
 					error={fieldErrors.email}
 				/>
@@ -99,7 +98,6 @@ export function LoginForm() {
 					onChange={(e) => setPassword(e.target.value)}
 					placeholder="••••••••••••"
 					autoComplete="current-password"
-					required
 					leftIcon={<Lock className="h-4 w-4" />}
 					error={fieldErrors.password}
 				/>

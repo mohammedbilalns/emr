@@ -1,7 +1,7 @@
 import type { Role } from "@emr/shared";
 import type { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "../errors/base.error";
-import { User } from "../models/user.model";
+import { User } from "../modules/auth";
 import { verifyAccessToken } from "../utils/jwt";
 
 /**

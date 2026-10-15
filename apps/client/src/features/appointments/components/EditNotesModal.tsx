@@ -73,7 +73,7 @@ export function EditNotesModal({
 				</div>
 			}
 		>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
 						{displayError}
