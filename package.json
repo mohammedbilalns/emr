@@ -3,7 +3,7 @@
 	"private": true,
 	"workspaces": [
 		"apps/*",
-		"packages/*"
+		"packages"
 	],
 	"description": "",
 	"main": "index.js",
