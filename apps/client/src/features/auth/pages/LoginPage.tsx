@@ -1,12 +1,21 @@
 import { Activity, HeartHandshake, Stethoscope } from "lucide-react";
 import { Navigate } from "react-router-dom";
+import { Spinner } from "../../../shared/components/ui/Spinner";
 import { useAuth } from "../../../shared/context/AuthContext";
 import { LoginForm } from "../components/LoginForm";
 
 export function LoginPage() {
 	const { isAuthenticated, isLoading } = useAuth();
 
-	if (!isLoading && isAuthenticated) {
+	if (isLoading) {
+		return (
+			<div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 gap-3">
+				<Spinner size="lg" className="text-teal-400" />
+			</div>
+		);
+	}
+
+	if (isAuthenticated) {
 		return <Navigate to="/dashboard" replace />;
 	}
 
