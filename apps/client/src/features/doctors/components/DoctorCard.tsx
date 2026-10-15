@@ -23,7 +23,10 @@ export function DoctorCard({ doctor, onEditSchedule }: DoctorCardProps) {
 		.join(", ");
 
 	return (
-		<Card className="flex flex-col justify-between hover:border-slate-300 transition-all">
+		<Card
+			data-testid="doctor-card"
+			className="flex flex-col justify-between hover:border-slate-300 transition-all"
+		>
 			<div>
 				<CardHeader className="pb-3">
 					<div className="flex flex-wrap sm:flex-nowrap items-start justify-between gap-2">

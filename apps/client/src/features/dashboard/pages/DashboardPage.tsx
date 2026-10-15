@@ -177,7 +177,7 @@ export function DashboardPage() {
 
 				{/* Quick Actions & Department Navigation (1 Column) */}
 				<div className="flex flex-col gap-4">
-					<Card>
+					<Card data-testid="quick-shortcuts">
 						<CardHeader className="pb-3">
 							<CardTitle className="text-sm font-semibold">
 								Quick Shortcuts
