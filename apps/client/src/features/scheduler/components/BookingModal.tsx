@@ -2,6 +2,7 @@ import {
 	type CreateAppointmentBody,
 	createAppointmentSchema,
 	type DoctorDto,
+	formatFriendlyErrorMessage,
 	type PatientDto,
 	type SlotDto,
 } from "@emr/shared";
@@ -106,7 +107,7 @@ export function BookingModal({
 			for (const issue of validation.error.issues) {
 				const field = issue.path[issue.path.length - 1];
 				if (typeof field === "string") {
-					errors[field] = issue.message;
+					errors[field] = formatFriendlyErrorMessage(issue.message, field);
 				}
 			}
 			setFieldErrors(errors);
@@ -118,7 +119,10 @@ export function BookingModal({
 				if (error instanceof ApiClientError && error.fieldErrors.length > 0) {
 					const errors: Record<string, string> = {};
 					for (const field of error.fieldErrors) {
-						errors[field.path] = field.message;
+						errors[field.path] = formatFriendlyErrorMessage(
+							field.message,
+							field.path,
+						);
 					}
 					setFieldErrors(errors);
 				}

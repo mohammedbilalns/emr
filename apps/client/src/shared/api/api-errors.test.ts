@@ -55,8 +55,30 @@ describe("api-errors utilities", () => {
 			expect(normalized.statusCode).toBe(422);
 			expect(normalized.message).toBe("Validation failed");
 			expect(normalized.fieldErrors).toEqual([
-				{ path: "email", message: "Invalid email address" },
+				{ path: "email", message: "Please enter a valid email address" },
 			]);
+		});
+
+		it("converts mechanical raw Zod errors into user-friendly messages", () => {
+			const axiosErr = new AxiosError(
+				"Request failed with status code 400",
+				"ERR_BAD_REQUEST",
+				undefined,
+				undefined,
+				{
+					status: 400,
+					statusText: "Bad Request",
+					headers: {},
+					config: { headers: new AxiosHeaders() },
+					data: {
+						success: false,
+						message: "Too small: expected string to have >=2 characters",
+					},
+				},
+			);
+
+			const normalized = normalizeError(axiosErr);
+			expect(normalized.message).toBe("Must be at least 2 characters");
 		});
 
 		it("handles non-error unknown values safely", () => {

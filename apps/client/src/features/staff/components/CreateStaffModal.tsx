@@ -1,6 +1,13 @@
-import { type CreateStaffBody, createStaffSchema } from "@emr/shared";
+import {
+	type CreateStaffBody,
+	createStaffSchema,
+	formatFriendlyErrorMessage,
+} from "@emr/shared";
 import { type FormEvent, useEffect, useState } from "react";
-import { getErrorMessage } from "../../../shared/api/api-errors";
+import {
+	ApiClientError,
+	getErrorMessage,
+} from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
@@ -24,16 +31,31 @@ export function CreateStaffModal({
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
 	useEffect(() => {
 		if (isOpen) {
 			setErrorMessage(null);
+			setFieldErrors({});
 		}
 	}, [isOpen]);
+
+	useEffect(() => {
+		if (error) {
+			if (error instanceof ApiClientError && error.fieldErrors.length > 0) {
+				const errors: Record<string, string> = {};
+				for (const field of error.fieldErrors) {
+					errors[field.path] = field.message;
+				}
+				setFieldErrors(errors);
+			}
+		}
+	}, [error]);
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		setErrorMessage(null);
+		setFieldErrors({});
 
 		const candidate: CreateStaffBody = {
 			name: name.trim(),
@@ -43,7 +65,20 @@ export function CreateStaffModal({
 
 		const validation = createStaffSchema.safeParse(candidate);
 		if (!validation.success) {
-			setErrorMessage(validation.error.issues[0].message);
+			const errors: Record<string, string> = {};
+			for (const issue of validation.error.issues) {
+				const field = issue.path[issue.path.length - 1];
+				if (typeof field === "string") {
+					errors[field] = formatFriendlyErrorMessage(
+						issue.message,
+						field === "name" ? "Staff name" : field,
+					);
+				}
+			}
+			setFieldErrors(errors);
+			setErrorMessage(
+				formatFriendlyErrorMessage(validation.error.issues[0].message),
+			);
 			return;
 		}
 
@@ -91,7 +126,13 @@ export function CreateStaffModal({
 					label="Staff Full Name"
 					placeholder="e.g. Clara Oswald"
 					value={name}
-					onChange={(e) => setName(e.target.value)}
+					error={fieldErrors.name}
+					onChange={(e) => {
+						setName(e.target.value);
+						if (fieldErrors.name) {
+							setFieldErrors((prev) => ({ ...prev, name: "" }));
+						}
+					}}
 				/>
 
 				<Input
@@ -99,7 +140,13 @@ export function CreateStaffModal({
 					type="email"
 					placeholder="clara@emr.local"
 					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					error={fieldErrors.email}
+					onChange={(e) => {
+						setEmail(e.target.value);
+						if (fieldErrors.email) {
+							setFieldErrors((prev) => ({ ...prev, email: "" }));
+						}
+					}}
 				/>
 
 				<Input
@@ -107,7 +154,13 @@ export function CreateStaffModal({
 					type="password"
 					placeholder="••••••••••••"
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					error={fieldErrors.password}
+					onChange={(e) => {
+						setPassword(e.target.value);
+						if (fieldErrors.password) {
+							setFieldErrors((prev) => ({ ...prev, password: "" }));
+						}
+					}}
 				/>
 
 				<p className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">

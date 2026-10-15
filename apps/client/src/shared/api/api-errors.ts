@@ -1,4 +1,4 @@
-import type { ApiError } from "@emr/shared";
+import { type ApiError, formatFriendlyErrorMessage } from "@emr/shared";
 import axios, { type AxiosError } from "axios";
 
 export interface FieldError {
@@ -18,7 +18,7 @@ export class ApiClientError extends Error {
 		statusCode?: number,
 		fieldErrors: FieldError[] = [],
 	) {
-		super(message);
+		super(formatFriendlyErrorMessage(message));
 		this.name = "ApiClientError";
 		this.statusCode = statusCode;
 		this.fieldErrors = fieldErrors;
@@ -53,11 +53,18 @@ export function normalizeError(error: unknown): ApiClientError {
 			const fieldErrors: FieldError[] = Array.isArray(data.errors)
 				? data.errors.map((e) => ({
 						path: String(e.path),
-						message: String(e.message),
+						message: formatFriendlyErrorMessage(
+							String(e.message),
+							String(e.path),
+						),
 					}))
 				: [];
 
-			return new ApiClientError(data.message, status, fieldErrors);
+			return new ApiClientError(
+				formatFriendlyErrorMessage(data.message),
+				status,
+				fieldErrors,
+			);
 		}
 
 		if (
@@ -126,5 +133,5 @@ export function getErrorMessage(
 ): string {
 	if (!error) return fallback;
 	const normalized = normalizeError(error);
-	return normalized.message || fallback;
+	return formatFriendlyErrorMessage(normalized.message || fallback);
 }

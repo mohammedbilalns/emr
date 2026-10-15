@@ -1,5 +1,6 @@
 import {
 	type DoctorDto,
+	formatFriendlyErrorMessage,
 	type SessionDto,
 	updateDoctorScheduleSchema,
 } from "@emr/shared";
@@ -142,7 +143,9 @@ export function ScheduleConfigModal({
 
 		const result = updateDoctorScheduleSchema.safeParse(candidate);
 		if (!result.success) {
-			setErrorMessage(result.error.issues[0].message);
+			setErrorMessage(
+				formatFriendlyErrorMessage(result.error.issues[0].message),
+			);
 			return;
 		}
 
