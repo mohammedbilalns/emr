@@ -38,19 +38,19 @@ export class UnauthorizedError extends BaseError {
 }
 export class ForbiddenError extends BaseError {
 	readonly statusCode = HttpStatus.FORBIDDEN;
-	constructor(message = ErrorMessages.FORBIDDEN) {
+	constructor(message: string = ErrorMessages.FORBIDDEN) {
 		super(message, "FORBIDDEN");
 	}
 }
 export class NotFoundError extends BaseError {
 	readonly statusCode = HttpStatus.NOT_FOUND;
-	constructor(message = ErrorMessages.NOT_FOUND) {
+	constructor(message: string = ErrorMessages.NOT_FOUND) {
 		super(message, "NOT_FOUND");
 	}
 }
 export class ConflictError extends BaseError {
 	readonly statusCode = HttpStatus.CONFLICT;
-	constructor(message = ErrorMessages.CONFLICT) {
+	constructor(message: string = ErrorMessages.CONFLICT) {
 		super(message, "CONFLICT");
 	}
 }
