@@ -25,14 +25,12 @@ export default defineConfig({
 	webServer: [
 		{
 			command: "npm run dev:api",
-			cwd: "../../",
 			url: "http://localhost:3000/health",
 			reuseExistingServer: !process.env.CI,
 			timeout: 60_000,
 		},
 		{
 			command: "npm run dev:web",
-			cwd: "../../",
 			url: "http://localhost:5173",
 			reuseExistingServer: !process.env.CI,
 			timeout: 60_000,

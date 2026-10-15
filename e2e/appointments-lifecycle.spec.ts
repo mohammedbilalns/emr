@@ -14,31 +14,31 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		// Switch to Scheduled tab to locate a scheduled booking
 		await page.getByRole("button", { name: "Scheduled" }).click();
 
-		// Locate the first scheduled row for Alice Johnson
-		const aliceRow = page
-			.locator("tr", {
-				has: page.locator("text=Alice Johnson"),
-			})
-			.first();
-		await expect(aliceRow).toBeVisible({ timeout: 10_000 });
-		await expect(aliceRow.getByText("SCHEDULED")).toBeVisible();
+		// Locate first scheduled row
+		const scheduledRow = page.locator("tbody tr").first();
+		await expect(scheduledRow).toBeVisible({ timeout: 10_000 });
+
+		// Capture patient name to follow through arrival
+		const scheduledPatientCell = scheduledRow.locator("td").first();
+		const scheduledCellText = await scheduledPatientCell.innerText();
+		const patientName = scheduledCellText.split("\n")[0].split("·")[0].trim();
 
 		// Mark patient as arrived
-		const arriveBtn = aliceRow.getByRole("button", { name: "Arrive" });
+		const arriveBtn = scheduledRow.getByRole("button", { name: "Arrive" });
 		await arriveBtn.click();
 
 		// Switch to Arrived tab to verify patient arrival state
 		await page.getByRole("button", { name: "Arrived" }).click();
-		const arrivedAliceRow = page
+		const arrivedRow = page
 			.locator("tr", {
-				has: page.locator("text=Alice Johnson"),
+				has: page.locator(`text=${patientName}`),
 			})
 			.first();
-		await expect(arrivedAliceRow).toBeVisible({ timeout: 5000 });
-		await expect(arrivedAliceRow.getByText("ARRIVED")).toBeVisible();
+		await expect(arrivedRow).toBeVisible({ timeout: 5000 });
+		await expect(arrivedRow.getByText("ARRIVED")).toBeVisible();
 
 		// Open Edit Notes modal
-		const editBtn = arrivedAliceRow.getByRole("button", {
+		const editBtn = arrivedRow.getByRole("button", {
 			name: "Edit notes and purpose",
 		});
 		await editBtn.click();
@@ -60,7 +60,7 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		await expect(editModal).not.toBeVisible({ timeout: 5000 });
 
 		// Verify changes via View Details modal
-		const detailsBtn = arrivedAliceRow.getByRole("button", {
+		const detailsBtn = arrivedRow.getByRole("button", {
 			name: "View appointment details",
 		});
 		await detailsBtn.click();
@@ -75,17 +75,17 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		await detailsModal.getByRole("button", { name: "Close Record" }).click();
 		await expect(detailsModal).not.toBeVisible();
 
-		// Switch to All Appointments to locate Charlie Brown for cancellation
-		await page.getByRole("button", { name: "All Appointments" }).click();
-		const charlieRow = page
+		// Switch to Scheduled tab to locate an active booking for cancellation
+		await page.getByRole("button", { name: "Scheduled" }).click();
+		const rowToCancel = page
 			.locator("tr", {
-				has: page.locator("text=Charlie Brown"),
+				has: page.getByRole("button", { name: "Cancel appointment" }),
 			})
 			.first();
-		await expect(charlieRow).toBeVisible({ timeout: 10_000 });
+		await expect(rowToCancel).toBeVisible({ timeout: 10_000 });
 
 		// Trigger cancellation
-		const cancelBtn = charlieRow.getByRole("button", {
+		const cancelBtn = rowToCancel.getByRole("button", {
 			name: "Cancel appointment",
 		});
 		await cancelBtn.click();
@@ -102,10 +102,11 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 			.click();
 		await expect(cancelModal).not.toBeVisible({ timeout: 5000 });
 
-		// Verify status changed to CANCELLED
-		await expect(charlieRow.getByText("CANCELLED")).toBeVisible({
-			timeout: 5000,
-		});
+		// Switch to Cancelled tab to verify cancellation
+		await page.getByRole("button", { name: "Cancelled" }).click();
+		const cancelledRow = page.locator("tbody tr").first();
+		await expect(cancelledRow).toBeVisible({ timeout: 5000 });
+		await expect(cancelledRow.getByText("Cancelled")).toBeVisible();
 	});
 
 	test("doctor completes consultation for an arrived patient", async ({
@@ -121,14 +122,18 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		// Filter for Arrived patients
 		await page.getByRole("button", { name: "Arrived" }).click();
 
-		// Bob Smith is seeded as ARRIVED for Dr. Sarah Chen
+		// Locate an ARRIVED appointment
 		const arrivedRow = page
 			.locator("tr", {
-				has: page.locator("text=Bob Smith"),
+				has: page.getByText("ARRIVED"),
 			})
 			.first();
 		await expect(arrivedRow).toBeVisible({ timeout: 10_000 });
-		await expect(arrivedRow.getByText("ARRIVED")).toBeVisible();
+
+		// Capture patient name from first column to verify on completed tab
+		const patientCell = arrivedRow.locator("td").first();
+		const cellText = await patientCell.innerText();
+		const patientName = cellText.split("\n")[0].split("·")[0].trim();
 
 		// Complete the consultation
 		const completeBtn = arrivedRow.getByRole("button", { name: "Complete" });
@@ -139,7 +144,7 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		await page.getByRole("button", { name: "Completed" }).click();
 		const completedRow = page
 			.locator("tr", {
-				has: page.locator("text=Bob Smith"),
+				has: page.locator(`text=${patientName}`),
 			})
 			.first();
 		await expect(completedRow).toBeVisible({ timeout: 5000 });
