@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useRealtimeGlobal } from "../../socket/use-realtime";
 import { ToastContainer } from "../ui/Toast";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
 export function AppLayout() {
 	const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+	useRealtimeGlobal();
 
 	return (
 		<div className="min-h-screen flex bg-slate-50 text-slate-900 font-sans antialiased">
