@@ -14,7 +14,11 @@ export const scheduleSchema = z
 			.min(1, "At least one working day is required"),
 		sessions: z.array(sessionSchema).min(1, "At least one session is required"),
 		breaks: z.array(sessionSchema).default([]),
-		slotDuration: z.number().int().min(5).max(60),
+		slotDuration: z
+			.number({ error: "Slot duration is required" })
+			.int("Slot duration must be a whole number of minutes")
+			.min(5, "Slot duration must be at least 5 minutes")
+			.max(60, "Slot duration cannot exceed 60 minutes"),
 	})
 	.superRefine((schedule, ctx) => {
 		const sessions = [...schedule.sessions].sort((a, b) =>
@@ -56,10 +60,23 @@ export const scheduleSchema = z
 	});
 
 export const createDoctorSchema = z.object({
-	name: z.string().trim().min(2).max(80),
-	email: z.email(),
-	password: z.string().min(8),
-	department: z.string().trim().min(2).max(60),
+	name: z
+		.string({ error: "Physician name is required" })
+		.trim()
+		.min(1, "Physician name is required")
+		.min(2, "Physician name must be at least 2 characters")
+		.max(80, "Physician name cannot exceed 80 characters"),
+	email: z.email("Please provide a valid work email address"),
+	password: z
+		.string({ error: "Password is required" })
+		.min(1, "Password is required")
+		.min(8, "Password must be at least 8 characters long"),
+	department: z
+		.string({ error: "Department is required" })
+		.trim()
+		.min(1, "Department is required")
+		.min(2, "Department name must be at least 2 characters")
+		.max(60, "Department name cannot exceed 60 characters"),
 	schedule: scheduleSchema,
 });
 export type CreateDoctorBody = z.infer<typeof createDoctorSchema>;
@@ -72,14 +89,26 @@ export type UpdateDoctorScheduleBody = z.infer<
 >;
 
 export const createStaffSchema = z.object({
-	name: z.string().trim().min(2).max(80),
-	email: z.email(),
-	password: z.string().min(8),
+	name: z
+		.string({ error: "Staff name is required" })
+		.trim()
+		.min(1, "Staff name is required")
+		.min(2, "Staff name must be at least 2 characters")
+		.max(80, "Staff name cannot exceed 80 characters"),
+	email: z.email("Please provide a valid work email address"),
+	password: z
+		.string({ error: "Password is required" })
+		.min(1, "Password is required")
+		.min(8, "Password must be at least 8 characters long"),
 });
 export type CreateStaffBody = z.infer<typeof createStaffSchema>;
 
 export const slotsQuerySchema = z.object({
-	doctorId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid doctor id"),
-	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+	doctorId: z
+		.string({ error: "Doctor ID is required" })
+		.regex(/^[0-9a-fA-F]{24}$/, "Invalid doctor id"),
+	date: z
+		.string({ error: "Date is required" })
+		.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
 });
 export type SlotsQuery = z.infer<typeof slotsQuerySchema>;
