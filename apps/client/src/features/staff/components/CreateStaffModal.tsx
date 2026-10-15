@@ -1,5 +1,6 @@
 import { type CreateStaffBody, createStaffSchema } from "@emr/shared";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
@@ -9,6 +10,7 @@ export interface CreateStaffModalProps {
 	onClose: () => void;
 	onCreate: (data: CreateStaffBody) => void;
 	isLoading?: boolean;
+	error?: unknown;
 }
 
 export function CreateStaffModal({
@@ -16,11 +18,18 @@ export function CreateStaffModal({
 	onClose,
 	onCreate,
 	isLoading = false,
+	error,
 }: CreateStaffModalProps) {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (isOpen) {
+			setErrorMessage(null);
+		}
+	}, [isOpen]);
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
@@ -39,8 +48,9 @@ export function CreateStaffModal({
 		}
 
 		onCreate(validation.data);
-		onClose();
 	};
+
+	const displayError = errorMessage || (error ? getErrorMessage(error) : null);
 
 	return (
 		<Modal
@@ -71,9 +81,9 @@ export function CreateStaffModal({
 			}
 		>
 			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-				{errorMessage && (
+				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
-						{errorMessage}
+						{displayError}
 					</div>
 				)}
 

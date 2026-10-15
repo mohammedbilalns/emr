@@ -45,8 +45,13 @@ export function AppointmentsPage() {
 	});
 
 	// Query appointments
-	const { data, isLoading, isFetching, refetch } =
-		useAppointmentsQuery(filters);
+	const {
+		data,
+		isLoading,
+		isFetching,
+		error: appointmentsError,
+		refetch,
+	} = useAppointmentsQuery(filters);
 
 	const {
 		markArrived,
@@ -57,6 +62,8 @@ export function AppointmentsPage() {
 		isCancelling,
 		updateAppointment,
 		isUpdating,
+		updateError,
+		resetUpdate,
 	} = useAppointmentActions();
 
 	const isActionPending =
@@ -76,7 +83,15 @@ export function AppointmentsPage() {
 		id: string,
 		body: { purpose?: string; notes?: string },
 	) => {
-		updateAppointment({ id, body });
+		updateAppointment(
+			{ id, body },
+			{
+				onSuccess: () => {
+					setEditNotesTarget(null);
+					resetUpdate();
+				},
+			},
+		);
 	};
 
 	if (!user) return null;
@@ -147,6 +162,7 @@ export function AppointmentsPage() {
 				onOpenEditNotes={setEditNotesTarget}
 				onViewDetails={setDetailsTarget}
 				isActionPending={isActionPending}
+				error={appointmentsError}
 			/>
 
 			{/* Cancel Confirmation Dialog */}
@@ -162,9 +178,13 @@ export function AppointmentsPage() {
 			<EditNotesModal
 				appointment={editNotesTarget}
 				isOpen={Boolean(editNotesTarget)}
-				onClose={() => setEditNotesTarget(null)}
+				onClose={() => {
+					setEditNotesTarget(null);
+					resetUpdate();
+				}}
 				onSave={handleSaveNotes}
 				isLoading={isUpdating}
+				error={updateError}
 			/>
 
 			{/* Appointment Full Details Modal */}

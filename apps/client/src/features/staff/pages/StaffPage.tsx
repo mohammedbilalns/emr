@@ -140,9 +140,20 @@ export function StaffPage() {
 			{/* Create Staff Modal */}
 			<CreateStaffModal
 				isOpen={isCreateOpen}
-				onClose={() => setIsCreateOpen(false)}
-				onCreate={(body) => createMutation.mutate(body)}
+				onClose={() => {
+					setIsCreateOpen(false);
+					createMutation.reset();
+				}}
+				onCreate={(body) => {
+					createMutation.mutate(body, {
+						onSuccess: () => {
+							setIsCreateOpen(false);
+							createMutation.reset();
+						},
+					});
+				}}
 				isLoading={createMutation.isPending}
+				error={createMutation.error}
 			/>
 		</div>
 	);

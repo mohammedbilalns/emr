@@ -1,5 +1,6 @@
 import { type CreateDoctorBody, createDoctorSchema } from "@emr/shared";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
@@ -10,6 +11,7 @@ export interface CreateDoctorModalProps {
 	onClose: () => void;
 	onCreate: (data: CreateDoctorBody) => void;
 	isLoading?: boolean;
+	error?: unknown;
 }
 
 export function CreateDoctorModal({
@@ -17,6 +19,7 @@ export function CreateDoctorModal({
 	onClose,
 	onCreate,
 	isLoading = false,
+	error,
 }: CreateDoctorModalProps) {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
@@ -24,6 +27,12 @@ export function CreateDoctorModal({
 	const [department, setDepartment] = useState("General Medicine");
 	const [slotDuration, setSlotDuration] = useState<number>(15);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (isOpen) {
+			setErrorMessage(null);
+		}
+	}, [isOpen]);
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
@@ -52,8 +61,9 @@ export function CreateDoctorModal({
 		}
 
 		onCreate(validation.data);
-		onClose();
 	};
+
+	const displayError = errorMessage || (error ? getErrorMessage(error) : null);
 
 	return (
 		<Modal
@@ -84,9 +94,9 @@ export function CreateDoctorModal({
 			}
 		>
 			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-				{errorMessage && (
+				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
-						{errorMessage}
+						{displayError}
 					</div>
 				)}
 

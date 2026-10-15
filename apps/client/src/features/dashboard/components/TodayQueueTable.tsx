@@ -1,6 +1,7 @@
 import type { AppointmentDto, Role } from "@emr/shared";
 import { CheckCircle2, Clock, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { EmptyState } from "../../../shared/components/ui/EmptyState";
 import { StatusBadge } from "../../appointments/components/StatusBadge";
@@ -11,6 +12,7 @@ export interface TodayQueueTableProps {
 	onMarkArrived: (id: string) => void;
 	onComplete: (id: string) => void;
 	isLoading?: boolean;
+	error?: unknown;
 }
 
 export function TodayQueueTable({
@@ -19,7 +21,21 @@ export function TodayQueueTable({
 	onMarkArrived,
 	onComplete,
 	isLoading = false,
+	error,
 }: TodayQueueTableProps) {
+	if (error) {
+		return (
+			<EmptyState
+				icon={<Clock className="h-6 w-6 text-rose-500" />}
+				title="Failed to Load Today's Queue"
+				description={getErrorMessage(
+					error,
+					"Could not retrieve today's appointments. Please retry.",
+				)}
+			/>
+		);
+	}
+
 	if (appointments.length === 0) {
 		return (
 			<EmptyState

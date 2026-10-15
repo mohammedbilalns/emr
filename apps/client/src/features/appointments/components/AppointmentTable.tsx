@@ -1,5 +1,6 @@
 import type { AppointmentDto, PaginationMeta, Role } from "@emr/shared";
 import { ClipboardX } from "lucide-react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { EmptyState } from "../../../shared/components/ui/EmptyState";
 import { Pagination } from "../../../shared/components/ui/Pagination";
 import { Spinner } from "../../../shared/components/ui/Spinner";
@@ -18,6 +19,7 @@ export interface AppointmentTableProps {
 	onOpenEditNotes: (appointment: AppointmentDto) => void;
 	onViewDetails: (appointment: AppointmentDto) => void;
 	isActionPending?: boolean;
+	error?: unknown;
 }
 
 export function AppointmentTable({
@@ -32,6 +34,7 @@ export function AppointmentTable({
 	onOpenEditNotes,
 	onViewDetails,
 	isActionPending,
+	error,
 }: AppointmentTableProps) {
 	if (isLoading) {
 		return (
@@ -40,6 +43,21 @@ export function AppointmentTable({
 				<span className="text-xs font-medium text-slate-500">
 					Loading appointments...
 				</span>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="bg-white rounded-xl border border-rose-200">
+				<EmptyState
+					icon={<ClipboardX className="h-6 w-6 text-rose-500" />}
+					title="Failed to Load Appointments"
+					description={getErrorMessage(
+						error,
+						"Could not retrieve appointment records. Please check your connection or retry.",
+					)}
+				/>
 			</div>
 		);
 	}

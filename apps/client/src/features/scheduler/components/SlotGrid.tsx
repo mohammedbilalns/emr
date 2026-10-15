@@ -1,6 +1,7 @@
 import { type SlotDto, toMinutes } from "@emr/shared";
 import { CalendarX, Moon, Sun, Sunrise } from "lucide-react";
 import React, { useMemo } from "react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { EmptyState } from "../../../shared/components/ui/EmptyState";
 import { Spinner } from "../../../shared/components/ui/Spinner";
 import { SlotItem } from "./SlotItem";
@@ -11,6 +12,7 @@ export interface SlotGridProps {
 	selectedSlot: SlotDto | null;
 	onSelectSlot: (slot: SlotDto) => void;
 	isLoading: boolean;
+	error?: unknown;
 }
 
 export const SlotGrid = React.memo(function SlotGrid({
@@ -19,6 +21,7 @@ export const SlotGrid = React.memo(function SlotGrid({
 	selectedSlot,
 	onSelectSlot,
 	isLoading,
+	error,
 }: SlotGridProps) {
 	// Check if date is today and calculate current minutes
 	const { isToday, currentMinutes } = useMemo(() => {
@@ -70,6 +73,19 @@ export const SlotGrid = React.memo(function SlotGrid({
 					Loading available consultation times...
 				</span>
 			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<EmptyState
+				icon={<CalendarX className="h-6 w-6 text-rose-500" />}
+				title="Unable to Load Time Slots"
+				description={getErrorMessage(
+					error,
+					"The selected doctor consultation hours could not be loaded.",
+				)}
+			/>
 		);
 	}
 

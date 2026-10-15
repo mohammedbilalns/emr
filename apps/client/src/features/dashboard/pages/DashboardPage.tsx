@@ -36,7 +36,11 @@ export function DashboardPage() {
 	}, []);
 
 	// Query today's appointments
-	const { data, isLoading } = useQuery({
+	const {
+		data,
+		isLoading,
+		error: appointmentsError,
+	} = useQuery({
 		queryKey: ["appointments", { dateFrom: todayString, dateTo: todayString }],
 		queryFn: () =>
 			listAppointmentsApi({
@@ -166,6 +170,7 @@ export function DashboardPage() {
 							onMarkArrived={markArrived}
 							onComplete={completeAppointment}
 							isLoading={isMarkingArrived || isCompleting || isLoading}
+							error={appointmentsError}
 						/>
 					</CardContent>
 				</Card>

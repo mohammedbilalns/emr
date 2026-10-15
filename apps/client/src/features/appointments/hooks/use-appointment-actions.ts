@@ -30,6 +30,7 @@ export function useAppointmentActions() {
 				getErrorMessage(error, "Failed to update arrival status"),
 				"Status Error",
 			);
+			invalidateAll();
 		},
 	});
 
@@ -47,6 +48,7 @@ export function useAppointmentActions() {
 				getErrorMessage(error, "Failed to complete appointment"),
 				"Status Error",
 			);
+			invalidateAll();
 		},
 	});
 
@@ -64,6 +66,7 @@ export function useAppointmentActions() {
 				getErrorMessage(error, "Failed to cancel appointment"),
 				"Cancellation Error",
 			);
+			invalidateAll();
 		},
 	});
 
@@ -91,5 +94,7 @@ export function useAppointmentActions() {
 		isCancelling: cancelMutation.isPending,
 		updateAppointment: updateMutation.mutate,
 		isUpdating: updateMutation.isPending,
+		updateError: updateMutation.error,
+		resetUpdate: updateMutation.reset,
 	};
 }

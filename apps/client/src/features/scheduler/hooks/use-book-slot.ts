@@ -31,19 +31,19 @@ export function useBookSlot(onSuccessCallback?: () => void) {
 			}
 		},
 		onError: (error, variables) => {
+			const message = getErrorMessage(error, "Failed to book appointment");
+
+			// Refresh slots cache so UI updates with latest availability
+			void queryClient.invalidateQueries({
+				queryKey: ["slots", variables.doctorId, variables.date],
+			});
+
 			// Specific handling for 409 conflict
 			if (error instanceof ApiClientError && error.statusCode === 409) {
-				toast.warning(
-					"This appointment time was just booked. Please choose another available time.",
-					"Time Slot Unavailable",
-				);
-				void queryClient.invalidateQueries({
-					queryKey: ["slots", variables.doctorId, variables.date],
-				});
+				toast.warning(message, "Time Slot Conflict");
 				return;
 			}
 
-			const message = getErrorMessage(error, "Failed to book appointment");
 			toast.error(message, "Booking Failed");
 		},
 	});

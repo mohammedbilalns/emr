@@ -54,6 +54,46 @@ export function normalizeError(error: unknown): ApiClientError {
 			return new ApiClientError(data.message, status, fieldErrors);
 		}
 
+		if (
+			typeof data === "object" &&
+			data !== null &&
+			"message" in data &&
+			typeof (data as { message: unknown }).message === "string" &&
+			(data as { message: string }).message.trim().length > 0
+		) {
+			const rawErrors = (data as { errors?: unknown }).errors;
+			const fieldErrors: FieldError[] = Array.isArray(rawErrors)
+				? rawErrors
+						.filter(
+							(e): e is { path: unknown; message: unknown } =>
+								typeof e === "object" &&
+								e !== null &&
+								"path" in e &&
+								"message" in e,
+						)
+						.map((e) => ({
+							path: String(e.path),
+							message: String(e.message),
+						}))
+				: [];
+
+			return new ApiClientError(
+				(data as { message: string }).message,
+				status,
+				fieldErrors,
+			);
+		}
+
+		if (
+			typeof data === "object" &&
+			data !== null &&
+			"error" in data &&
+			typeof (data as { error: unknown }).error === "string" &&
+			(data as { error: string }).error.trim().length > 0
+		) {
+			return new ApiClientError((data as { error: string }).error, status);
+		}
+
 		if (typeof data === "string" && data.trim().length > 0) {
 			return new ApiClientError(data, status);
 		}

@@ -5,6 +5,7 @@ import {
 } from "@emr/shared";
 import { Plus, Trash2 } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { Select } from "../../../shared/components/ui/Select";
@@ -27,6 +28,7 @@ export interface ScheduleConfigModalProps {
 		},
 	) => void;
 	isLoading?: boolean;
+	error?: unknown;
 }
 
 const DAYS = [
@@ -45,6 +47,7 @@ export function ScheduleConfigModal({
 	onClose,
 	onSave,
 	isLoading = false,
+	error,
 }: ScheduleConfigModalProps) {
 	const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
 	const [sessions, setSessions] = useState<IdentifiedSession[]>([]);
@@ -144,8 +147,9 @@ export function ScheduleConfigModal({
 		}
 
 		onSave(doctor.id, result.data.schedule);
-		onClose();
 	};
+
+	const displayError = errorMessage || (error ? getErrorMessage(error) : null);
 
 	return (
 		<Modal
@@ -176,9 +180,9 @@ export function ScheduleConfigModal({
 			}
 		>
 			<form onSubmit={handleSubmit} className="flex flex-col gap-5 text-xs">
-				{errorMessage && (
+				{displayError && (
 					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
-						{errorMessage}
+						{displayError}
 					</div>
 				)}
 

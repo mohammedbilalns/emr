@@ -78,7 +78,15 @@ export function DoctorsPage() {
 		id: string,
 		schedule: UpdateDoctorScheduleBody["schedule"],
 	) => {
-		updateScheduleMutation.mutate({ id, schedule });
+		updateScheduleMutation.mutate(
+			{ id, schedule },
+			{
+				onSuccess: () => {
+					setScheduleTarget(null);
+					updateScheduleMutation.reset();
+				},
+			},
+		);
 	};
 
 	return (
@@ -145,18 +153,33 @@ export function DoctorsPage() {
 			{/* Create Doctor Dialog */}
 			<CreateDoctorModal
 				isOpen={isCreateOpen}
-				onClose={() => setIsCreateOpen(false)}
-				onCreate={(body) => createMutation.mutate(body)}
+				onClose={() => {
+					setIsCreateOpen(false);
+					createMutation.reset();
+				}}
+				onCreate={(body) => {
+					createMutation.mutate(body, {
+						onSuccess: () => {
+							setIsCreateOpen(false);
+							createMutation.reset();
+						},
+					});
+				}}
 				isLoading={createMutation.isPending}
+				error={createMutation.error}
 			/>
 
 			{/* Edit Schedule Dialog */}
 			<ScheduleConfigModal
 				doctor={scheduleTarget}
 				isOpen={Boolean(scheduleTarget)}
-				onClose={() => setScheduleTarget(null)}
+				onClose={() => {
+					setScheduleTarget(null);
+					updateScheduleMutation.reset();
+				}}
 				onSave={handleSaveSchedule}
 				isLoading={updateScheduleMutation.isPending}
+				error={updateScheduleMutation.error}
 			/>
 		</div>
 	);

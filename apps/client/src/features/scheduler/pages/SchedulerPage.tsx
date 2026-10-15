@@ -53,6 +53,7 @@ export function SchedulerPage() {
 		data: slots = [],
 		isLoading: isSlotsLoading,
 		isFetching: isSlotsFetching,
+		error: slotsError,
 		refetch: refetchSlots,
 	} = useSlotsQuery(selectedDoctorId, selectedDate);
 
@@ -196,6 +197,7 @@ export function SchedulerPage() {
 						selectedSlot={selectedSlot}
 						onSelectSlot={handleSlotSelect}
 						isLoading={isSlotsLoading}
+						error={slotsError}
 					/>
 				</CardContent>
 			</Card>

@@ -5,8 +5,18 @@ import {
 	type PatientDto,
 	type SlotDto,
 } from "@emr/shared";
-import { Clock, Stethoscope, User, UserPlus } from "lucide-react";
+import {
+	AlertTriangle,
+	Clock,
+	Stethoscope,
+	User,
+	UserPlus,
+} from "lucide-react";
 import { type FormEvent, useState } from "react";
+import {
+	ApiClientError,
+	getErrorMessage,
+} from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
@@ -47,6 +57,7 @@ export function BookingModal({
 	const [purpose, setPurpose] = useState("");
 
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+	const [serverError, setServerError] = useState<string | null>(null);
 
 	const { mutate: bookSlot, isPending } = useBookSlot(() => {
 		onBookingComplete();
@@ -56,6 +67,7 @@ export function BookingModal({
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		setFieldErrors({});
+		setServerError(null);
 
 		let patientPayload: CreateAppointmentBody["patient"];
 
@@ -101,7 +113,19 @@ export function BookingModal({
 			return;
 		}
 
-		bookSlot(validation.data);
+		bookSlot(validation.data, {
+			onError: (error) => {
+				if (error instanceof ApiClientError && error.fieldErrors.length > 0) {
+					const errors: Record<string, string> = {};
+					for (const field of error.fieldErrors) {
+						errors[field.path] = field.message;
+					}
+					setFieldErrors(errors);
+				}
+				const msg = getErrorMessage(error, "Failed to book appointment");
+				setServerError(msg);
+			},
+		});
 	};
 
 	return (
@@ -133,6 +157,13 @@ export function BookingModal({
 			}
 		>
 			<form onSubmit={handleSubmit} className="flex flex-col gap-5">
+				{serverError && (
+					<div className="flex items-center gap-3 p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-medium">
+						<AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+						<span>{serverError}</span>
+					</div>
+				)}
+
 				{/* Appointment Overview Summary Pill */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-slate-50 text-xs">
 					<div className="flex items-center gap-2">

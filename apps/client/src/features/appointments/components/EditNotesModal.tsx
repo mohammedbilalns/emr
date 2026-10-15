@@ -1,5 +1,6 @@
 import type { AppointmentDto, UpdateAppointmentBody } from "@emr/shared";
 import { type FormEvent, useEffect, useState } from "react";
+import { getErrorMessage } from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Modal } from "../../../shared/components/ui/Modal";
 
@@ -9,6 +10,7 @@ export interface EditNotesModalProps {
 	onClose: () => void;
 	onSave: (id: string, body: UpdateAppointmentBody) => void;
 	isLoading?: boolean;
+	error?: unknown;
 }
 
 export function EditNotesModal({
@@ -17,6 +19,7 @@ export function EditNotesModal({
 	onClose,
 	onSave,
 	isLoading = false,
+	error,
 }: EditNotesModalProps) {
 	const [purpose, setPurpose] = useState("");
 	const [notes, setNotes] = useState("");
@@ -36,8 +39,11 @@ export function EditNotesModal({
 			purpose: purpose.trim() || undefined,
 			notes: notes.trim() || undefined,
 		});
-		onClose();
 	};
+
+	const displayError = error
+		? getErrorMessage(error, "Failed to update consultation details")
+		: null;
 
 	return (
 		<Modal
@@ -68,6 +74,11 @@ export function EditNotesModal({
 			}
 		>
 			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+				{displayError && (
+					<div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
+						{displayError}
+					</div>
+				)}
 				<div className="flex flex-col gap-1.5">
 					<label
 						htmlFor="edit-purpose"
