@@ -27,6 +27,21 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let restorePromise: Promise<{ user: AuthUser; accessToken: string }> | null =
+	null;
+
+function getRestoreSessionPromise(): Promise<{
+	user: AuthUser;
+	accessToken: string;
+}> {
+	if (!restorePromise) {
+		restorePromise = refreshApi().finally(() => {
+			restorePromise = null;
+		});
+	}
+	return restorePromise;
+}
+
 /**
  * Provides authenticated session state, role validation helpers, and login/logout lifecycle methods.
  */
@@ -40,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 		async function restoreSession() {
 			try {
-				const data = await refreshApi();
+				const data = await getRestoreSessionPromise();
 				if (!isMounted) return;
 				tokenManager.setToken(data.accessToken);
 				setUser(data.user);

@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { Role } from "@emr/shared";
 import type { Secret, SignOptions } from "jsonwebtoken";
 import jwt from "jsonwebtoken";
@@ -16,6 +16,7 @@ export interface AccessTokenPayload {
 
 export interface RefreshTokenPayload {
 	sub: string;
+	jti?: string;
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
@@ -30,7 +31,7 @@ export function signAccessToken(payload: AccessTokenPayload): string {
 
 export function signRefreshToken(userId: string): string {
 	return jwt.sign(
-		{ sub: userId },
+		{ sub: userId, jti: randomUUID() },
 		env.JWT_REFRESH_SECRET as Secret,
 		{
 			expiresIn: env.JWT_REFRESH_TTL,
