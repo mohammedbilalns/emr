@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
+import { Appointment } from "../models/appointment.model";
 import { Counter } from "../models/counter.model";
 import { Doctor } from "../models/doctor.model";
 import { Patient } from "../models/patient.model";
@@ -149,6 +150,103 @@ async function seed(): Promise<void> {
 		{ $max: { seq: 3 } },
 		{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
 	);
+
+	// 5. Sample appointments for next weekday
+	const adminUser = await User.findOne({ email: adminEmail });
+	const drChenDoc = await Doctor.findOne({ name: "Dr. Sarah Chen" });
+	const drWilsonDoc = await Doctor.findOne({ name: "Dr. James Wilson" });
+	const alice = await Patient.findOne({ patientCode: "P000001" });
+	const bob = await Patient.findOne({ patientCode: "P000002" });
+	const charlie = await Patient.findOne({ patientCode: "P000003" });
+
+	const d = new Date();
+	d.setDate(d.getDate() + 1);
+	if (d.getDay() === 0) d.setDate(d.getDate() + 1); // skip Sunday
+	const apptDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+	if (drChenDoc && alice && adminUser) {
+		await Appointment.findOneAndUpdate(
+			{
+				doctor: drChenDoc._id,
+				date: apptDate,
+				startTime: "09:00",
+				active: true,
+			},
+			{
+				doctor: drChenDoc._id,
+				doctorName: drChenDoc.name,
+				patient: alice._id,
+				patientCode: alice.patientCode,
+				patientName: alice.name,
+				patientMobile: alice.mobile,
+				department: drChenDoc.department,
+				date: apptDate,
+				startTime: "09:00",
+				endTime: "09:15",
+				status: "SCHEDULED",
+				purpose: "Cardiology consultation",
+				active: true,
+				createdBy: adminUser._id,
+			},
+			{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+		);
+	}
+
+	if (drChenDoc && bob && adminUser) {
+		await Appointment.findOneAndUpdate(
+			{
+				doctor: drChenDoc._id,
+				date: apptDate,
+				startTime: "09:15",
+				active: true,
+			},
+			{
+				doctor: drChenDoc._id,
+				doctorName: drChenDoc.name,
+				patient: bob._id,
+				patientCode: bob.patientCode,
+				patientName: bob.name,
+				patientMobile: bob.mobile,
+				department: drChenDoc.department,
+				date: apptDate,
+				startTime: "09:15",
+				endTime: "09:30",
+				status: "ARRIVED",
+				purpose: "Routine checkup",
+				active: true,
+				createdBy: adminUser._id,
+			},
+			{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+		);
+	}
+
+	if (drWilsonDoc && charlie && adminUser) {
+		await Appointment.findOneAndUpdate(
+			{
+				doctor: drWilsonDoc._id,
+				date: apptDate,
+				startTime: "09:00",
+				active: true,
+			},
+			{
+				doctor: drWilsonDoc._id,
+				doctorName: drWilsonDoc.name,
+				patient: charlie._id,
+				patientCode: charlie.patientCode,
+				patientName: charlie.name,
+				patientMobile: charlie.mobile,
+				department: drWilsonDoc.department,
+				date: apptDate,
+				startTime: "09:00",
+				endTime: "09:30",
+				status: "SCHEDULED",
+				purpose: "Migraine follow-up",
+				active: true,
+				createdBy: adminUser._id,
+			},
+			{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+		);
+	}
 
 	logger.info("Database seed completed successfully.");
 	logger.info(`Super admin:  ${adminEmail} / ${adminPassword}`);
