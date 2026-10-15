@@ -127,7 +127,7 @@ describe("Concurrency & Appointment State Machine Integration Tests", () => {
 				patient: {
 					type: "NEW",
 					name: "Lifecycle Patient",
-					mobile: `91111111${Math.floor(Math.random() * 90 + 10)}`,
+					mobile: String(Math.floor(1000000000 + Math.random() * 9000000000)),
 					gender: "FEMALE",
 				},
 				purpose: "General consultation",

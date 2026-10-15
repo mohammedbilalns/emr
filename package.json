@@ -15,7 +15,7 @@
 		"lint:fix": "biome check --write .",
 		"typecheck": "npm run typecheck -w apps/server && npm run typecheck -w apps/client",
 		"seed": "npm run seed -w apps/server",
-		"test": "npm run test -w apps/server && npm run test -w apps/client",
+		"test": "npm run test -w packages && npm run test -w apps/server && npm run test -w apps/client",
 		"test:e2e": "npm run test:e2e -w apps/client"
 	},
 	"keywords": [],
