@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
+import { Counter } from "../models/counter.model";
 import { Doctor } from "../models/doctor.model";
+import { Patient } from "../models/patient.model";
 import { User } from "../models/user.model";
 
 const receptionist = {
@@ -37,6 +39,30 @@ const doctors = [
 			breaks: [{ start: "10:30", end: "10:45" }], // break INSIDE a session — proves the filter
 			slotDuration: 30,
 		},
+	},
+];
+
+const patients = [
+	{
+		patientCode: "P000001",
+		name: "Alice Johnson",
+		mobile: "9876543201",
+		gender: "FEMALE" as const,
+		dateOfBirth: "1990-05-15",
+	},
+	{
+		patientCode: "P000002",
+		name: "Bob Smith",
+		mobile: "9876543202",
+		gender: "MALE" as const,
+		dateOfBirth: "1985-08-22",
+	},
+	{
+		patientCode: "P000003",
+		name: "Charlie Brown",
+		mobile: "9876543203",
+		gender: "OTHER" as const,
+		dateOfBirth: "1995-12-10",
 	},
 ];
 
@@ -102,11 +128,36 @@ async function seed(): Promise<void> {
 		);
 	}
 
+	// 4. Patients
+	for (const p of patients) {
+		await Patient.findOneAndUpdate(
+			{ mobile: p.mobile },
+			{
+				patientCode: p.patientCode,
+				name: p.name,
+				mobile: p.mobile,
+				gender: p.gender,
+				dateOfBirth: p.dateOfBirth,
+			},
+			{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+		);
+	}
+
+	// Sync counter sequence to ensure nextPatientCode doesn't collide
+	await Counter.findOneAndUpdate(
+		{ _id: "patient" },
+		{ $max: { seq: 3 } },
+		{ upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+	);
+
 	logger.info("Database seed completed successfully.");
 	logger.info(`Super admin:  ${adminEmail} / ${adminPassword}`);
 	logger.info(`Receptionist: ${receptionist.email} / ${receptionist.password}`);
 	for (const doc of doctors) {
 		logger.info(`Doctor (${doc.department}): ${doc.email} / ${doc.password}`);
+	}
+	for (const p of patients) {
+		logger.info(`Patient: ${p.patientCode} - ${p.name} (${p.mobile})`);
 	}
 
 	await disconnectDatabase();
