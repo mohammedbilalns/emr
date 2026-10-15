@@ -66,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const login = useCallback(async (credentials: LoginBody) => {
-		setStatus("loading");
 		try {
 			const data = await loginApi(credentials);
 			tokenManager.setToken(data.accessToken);

@@ -2,7 +2,10 @@ import { loginSchema } from "@emr/shared";
 import { Lock, Mail, ShieldAlert } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getErrorMessage } from "../../../shared/api/api-errors";
+import {
+	ApiClientError,
+	getErrorMessage,
+} from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { useAuth } from "../../../shared/context/AuthContext";
@@ -43,8 +46,16 @@ export function LoginForm() {
 			toast.success("Welcome to Enterprise EMR", "Authenticated");
 			navigate("/dashboard", { replace: true });
 		} catch (error) {
+			if (error instanceof ApiClientError && error.fieldErrors.length > 0) {
+				const errors: Record<string, string> = {};
+				for (const field of error.fieldErrors) {
+					errors[field.path] = field.message;
+				}
+				setFieldErrors(errors);
+			}
 			const message = getErrorMessage(error, "Failed to authenticate");
 			setFormError(message);
+			toast.error(message, "Authentication Failed");
 		} finally {
 			setIsSubmitting(false);
 		}
