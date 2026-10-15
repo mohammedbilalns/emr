@@ -14,9 +14,16 @@ const loginLimiter = rateLimit({
 	legacyHeaders: false,
 });
 
+// Authenticate credentials and issue access/refresh tokens
 router.post("/login", loginLimiter, validate({ body: loginSchema }), login);
+
+// Rotate tokens using HTTP-only refresh cookie
 router.post("/refresh", refresh);
+
+// Revoke active session and clear refresh cookie
 router.post("/logout", requireAuth, logout);
+
+// Return currently authenticated user session
 router.get("/me", requireAuth, me);
 
 export default router;

@@ -2,38 +2,32 @@ import type { PaginationMeta } from "@emr/shared";
 import type { Response } from "express";
 import { HttpStatus } from "../config/constants";
 
-// ---------------------------------------------------------------------------
-// Response sending utilities for the API layer.
-// Provides consistent success responses and pagination metadata.
-// ---------------------------------------------------------------------------
-
-interface SuccessOptions {
+export interface SuccessOptions {
 	message: string;
 	status?: number;
-	meta?: PaginationMeta; // Pagination metadata for list responses
+	meta?: PaginationMeta;
 }
 
-// ---------------------------------------------------------------------------
-// Sends a success JSON response.
-// ---------------------------------------------------------------------------
-export function sendSuccess<T>(
+/**
+ * Sends a standardized JSON success response, omitting the data key when undefined or null.
+ */
+export function sendSuccess<T = unknown>(
 	res: Response,
-	data: T,
-	options: SuccessOptions,
+	options: SuccessOptions & { data?: T | null },
 ): Response {
-	return res.status(options.status ?? HttpStatus.OK).json({
+	const { message, status = HttpStatus.OK, data, meta } = options;
+
+	return res.status(status).json({
 		success: true,
-		message: options.message,
-		data,
-		// Include pagination metadata only when provided
-		...(options.meta && { meta: options.meta }),
+		message,
+		...(data != null && { data }),
+		...(meta && { meta }),
 	});
 }
 
-// ---------------------------------------------------------------------------
-// Builds pagination metadata for API list endpoints.
-// Calculates total pages based on total items and page size.
-// ---------------------------------------------------------------------------
+/**
+ * Builds pagination metadata, ensuring totalPages is at least 1 even on empty sets.
+ */
 export function buildPaginationMeta(
 	page: number,
 	limit: number,

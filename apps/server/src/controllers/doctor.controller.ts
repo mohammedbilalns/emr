@@ -16,7 +16,8 @@ export async function createDoctor(
 	const user = req.user as AuthUser;
 	const body = req.validated?.body as CreateDoctorBody;
 	const doctor = await doctorService.createDoctor(body, user);
-	return sendSuccess(res, doctor, {
+	return sendSuccess(res, {
+		data: doctor,
 		message: "Doctor created successfully",
 		status: HttpStatus.CREATED,
 	});
@@ -29,7 +30,8 @@ export async function createReceptionist(
 	const user = req.user as AuthUser;
 	const body = req.validated?.body as CreateStaffBody;
 	const result = await doctorService.createReceptionist(body, user);
-	return sendSuccess(res, result, {
+	return sendSuccess(res, {
+		data: result,
 		message: "Receptionist created successfully",
 		status: HttpStatus.CREATED,
 	});
@@ -39,7 +41,8 @@ export async function listDoctors(
 	_req: Request,
 	res: Response,
 ): Promise<Response> {
-	return sendSuccess(res, await doctorService.listDoctors(), {
+	return sendSuccess(res, {
+		data: await doctorService.listDoctors(),
 		message: "Doctors retrieved",
 	});
 }
@@ -56,5 +59,8 @@ export async function updateSchedule(
 		body,
 		user,
 	);
-	return sendSuccess(res, doctor, { message: "Schedule updated successfully" });
+	return sendSuccess(res, {
+		data: doctor,
+		message: "Schedule updated successfully",
+	});
 }

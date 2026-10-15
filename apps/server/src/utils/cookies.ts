@@ -3,20 +3,17 @@ import { COOKIE_NAMES } from "../config/constants";
 import { env } from "../config/env";
 import { REFRESH_TTL_MS } from "./jwt";
 
-// ---------------------------------------------------------------------------
-// Cookie utility functions for refresh token management.
-// ---------------------------------------------------------------------------
-
+/**
+ * Base cookie options enforcing httpOnly, strict path scoping to auth endpoints,
+ * and environment-aware secure flags.
+ */
 const BASE_OPTS = {
-	httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-	secure: env.isProd, // HTTPS-only in production; lax in development
+	httpOnly: true,
+	secure: env.isProd,
 	sameSite: "lax",
-	path: "/api/v1/auth", // Scope the cookie to the API base path
+	path: "/api/v1/auth",
 } as const;
 
-// ---------------------------------------------------------------------------
-// Sets the refresh token cookie on the response object.
-// ---------------------------------------------------------------------------
 export function setRefreshCookie(res: Response, token: string): void {
 	res.cookie(COOKIE_NAMES.REFRESH_TOKEN, token, {
 		...BASE_OPTS,
@@ -24,9 +21,6 @@ export function setRefreshCookie(res: Response, token: string): void {
 	});
 }
 
-// ---------------------------------------------------------------------------
-// Clears the refresh token cookie by setting its max-age to zero.
-// ---------------------------------------------------------------------------
 export function clearRefreshCookie(res: Response): void {
 	res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, BASE_OPTS);
 }

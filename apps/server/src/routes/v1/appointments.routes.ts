@@ -23,6 +23,7 @@ const idParams = z.object({ id: objectId });
 
 const router = Router();
 
+// Book a new appointment
 router.post(
 	"/",
 	requireAuth,
@@ -31,6 +32,7 @@ router.post(
 	createAppointmentHandler,
 );
 
+// List appointments with filtering and pagination
 router.get(
 	"/",
 	requireAuth,
@@ -38,6 +40,7 @@ router.get(
 	listAppointmentsHandler,
 );
 
+// Get appointment details by ID
 router.get(
 	"/:id",
 	requireAuth,
@@ -45,6 +48,7 @@ router.get(
 	getAppointmentHandler,
 );
 
+// Update appointment details
 router.put(
 	"/:id",
 	requireAuth,
@@ -53,6 +57,7 @@ router.put(
 	updateAppointmentHandler,
 );
 
+// Cancel an appointment
 router.delete(
 	"/:id",
 	requireAuth,
@@ -61,6 +66,7 @@ router.delete(
 	cancelAppointmentHandler,
 );
 
+// Mark patient as arrived
 router.post(
 	"/:id/arrive",
 	requireAuth,
@@ -69,6 +75,7 @@ router.post(
 	markArrivedHandler,
 );
 
+// Mark appointment as completed
 router.post(
 	"/:id/complete",
 	requireAuth,

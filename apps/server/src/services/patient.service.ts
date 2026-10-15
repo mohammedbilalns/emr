@@ -3,7 +3,9 @@ import { toPatientDto } from "../mappers/patient.mapper";
 import { Patient } from "../models/patient.model";
 import { escapeRegex } from "../utils/regex";
 
-/** Search by mobile / patient code / name — the field content decides which index gets used. */
+/**
+ * Searches patients by query string across name, code, or mobile number.
+ */
 export async function searchPatients(
 	q: string,
 	limit: number,

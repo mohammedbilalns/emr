@@ -1,20 +1,27 @@
 import { APPOINTMENT_STATUS, type AppointmentStatus } from "@emr/shared";
 import mongoose, { type HydratedDocument, Schema } from "mongoose";
 
-interface IAppointment {
+export interface IAppointment {
 	doctor: mongoose.Types.ObjectId;
+	/** Denormalized for fast listings without $lookup */
 	doctorName: string;
 	patient: mongoose.Types.ObjectId;
 	patientCode: string;
+	/** Denormalized for fast listings without $lookup */
 	patientName: string;
+	/** Denormalized for fast listings without $lookup */
 	patientMobile: string;
 	department: string;
-	date: string; // "YYYY-MM-DD"
-	startTime: string; // "HH:mm"
-	endTime: string; // "HH:mm"
+	/** Calendar date in ISO format ('YYYY-MM-DD') */
+	date: string;
+	/** Slot start time formatted as 'HH:mm' */
+	startTime: string;
+	/** Slot end time formatted as 'HH:mm' */
+	endTime: string;
 	status: AppointmentStatus;
 	purpose?: string;
 	notes?: string;
+	/** Set to false on cancellation to release slot in partial unique index */
 	active: boolean;
 	createdBy: mongoose.Types.ObjectId;
 	updatedBy?: mongoose.Types.ObjectId;
@@ -46,15 +53,14 @@ const appointmentSchema = new Schema<IAppointment>(
 	{ timestamps: true },
 );
 
-// ──  double-booking guard ──────────────────────────────────────────────
-// Partial unique index: at most ONE active appointment per doctor/date/slot.
-// Cancellation sets active:false → the doc exits the index → slot is rebookable.
+// Double-booking guard: at most ONE active appointment per doctor/date/slot.
+// Cancellation sets active:false, which drops the doc from the partial index and releases the slot.
 appointmentSchema.index(
 	{ doctor: 1, date: 1, startTime: 1 },
 	{ unique: true, partialFilterExpression: { active: true } },
 );
 
-// List endpoint access paths
+// Access paths for list filters
 appointmentSchema.index({ date: -1, status: 1 });
 appointmentSchema.index({ department: 1, date: -1 });
 appointmentSchema.index({ patient: 1, date: -1 });
@@ -63,4 +69,5 @@ export const Appointment = mongoose.model<IAppointment>(
 	"Appointment",
 	appointmentSchema,
 );
+
 export type AppointmentDocument = HydratedDocument<IAppointment>;

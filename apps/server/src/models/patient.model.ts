@@ -2,11 +2,13 @@ import mongoose, { type HydratedDocument, Schema } from "mongoose";
 
 const GENDERS = ["MALE", "FEMALE", "OTHER"] as const;
 
-interface IPatient {
+export interface IPatient {
+	/** Sequential identifier (e.g., 'P000001') */
 	patientCode: string;
 	name: string;
 	mobile: string;
 	gender: (typeof GENDERS)[number];
+	/** ISO date string ('YYYY-MM-DD') */
 	dateOfBirth?: string;
 }
 
@@ -22,4 +24,5 @@ const patientSchema = new Schema<IPatient>(
 );
 
 export const Patient = mongoose.model<IPatient>("Patient", patientSchema);
+
 export type PatientDocument = HydratedDocument<IPatient>;

@@ -6,7 +6,7 @@ import { validate } from "../../middlewares/validate.middleware";
 
 const router = Router();
 
-// slots.routes.ts — any authenticated staff can view availability; booking itself is role-gated later
+// Fetch consultation time slots for a doctor on a specified date
 router.get(
 	"/",
 	requireAuth,

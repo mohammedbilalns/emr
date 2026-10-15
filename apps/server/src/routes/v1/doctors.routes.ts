@@ -16,6 +16,7 @@ import { validate } from "../../middlewares/validate.middleware";
 
 const router = Router();
 
+// Create a new doctor profile and account
 router.post(
 	"/",
 	requireAuth,
@@ -23,7 +24,11 @@ router.post(
 	validate({ body: createDoctorSchema }),
 	createDoctor,
 );
+
+// List all active doctors
 router.get("/", requireAuth, listDoctors);
+
+// Update weekly consultation schedule for a doctor
 router.put(
 	"/:id",
 	requireAuth,

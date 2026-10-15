@@ -1,5 +1,8 @@
 import { EventEmitter } from "node:events";
 
+/**
+ * Event emitter for appointment domain events (e.g. cache invalidation, real-time push).
+ */
 export const appointmentEvents = new EventEmitter();
 
 export function emitAppointmentCreated(doctorId: string, date: string): void {

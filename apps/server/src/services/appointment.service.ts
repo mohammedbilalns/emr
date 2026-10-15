@@ -29,7 +29,7 @@ import { audit } from "../utils/audit";
 import { escapeRegex } from "../utils/regex";
 import { generateSlots } from "./slot.service";
 
-interface ListResult {
+export interface ListResult {
 	items: AppointmentDto[];
 	total: number;
 	page: number;
@@ -68,6 +68,9 @@ function isWriteConflict(error: unknown): boolean {
 	return false;
 }
 
+/**
+ * Books an appointment with slot validation, patient creation, and double-booking guards.
+ */
 export async function bookAppointment(
 	body: CreateAppointmentBody,
 	actor: AuthUser,
@@ -198,6 +201,9 @@ export async function bookAppointment(
 	}
 }
 
+/**
+ * Lists appointments matching search filters with role-based scoping and pagination.
+ */
 export async function listAppointments(
 	query: AppointmentListQuery,
 	actor: AuthUser,
@@ -249,6 +255,9 @@ export async function listAppointments(
 	};
 }
 
+/**
+ * Retrieves an appointment by ID with role-based access checks.
+ */
 export async function getAppointment(
 	id: string,
 	actor: AuthUser,
@@ -264,6 +273,9 @@ export async function getAppointment(
 	return toAppointmentDto(appointment);
 }
 
+/**
+ * Updates appointment purpose or consultation notes.
+ */
 export async function updateAppointment(
 	id: string,
 	body: UpdateAppointmentBody,
@@ -305,7 +317,9 @@ export async function updateAppointment(
 	return toAppointmentDto(updated);
 }
 
-/** Shared engine for arrive / cancel / complete — one status machine, three verbs. */
+/**
+ * Enforces valid lifecycle status transitions with optimistic concurrency protection.
+ */
 async function transitionStatus(
 	id: string,
 	to: AppointmentStatus,
@@ -326,8 +340,8 @@ async function transitionStatus(
 		throw new InvalidStatusTransitionError(appointment.status, to);
 	}
 
-	// Optimistic guard: the update only applies if the state we validated against still holds —
-	// two concurrent "arrive" clicks can't both succeed.
+	// Optimistic guard: update only applies if the validated status still holds,
+	// preventing concurrent duplicate transitions.
 	const updated = await Appointment.findOneAndUpdate(
 		{ _id: id, status: appointment.status },
 		{

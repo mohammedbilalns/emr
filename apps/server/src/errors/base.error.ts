@@ -5,6 +5,9 @@ export interface FieldIssue {
 	message: string;
 }
 
+/**
+ * Base class for operational domain errors mapped to HTTP status codes.
+ */
 export abstract class BaseError extends Error {
 	public abstract readonly statusCode: number;
 	public readonly details?: FieldIssue[];
@@ -30,30 +33,35 @@ export class ValidationError extends BaseError {
 		super(message, "VALIDATION_ERROR", details);
 	}
 }
+
 export class UnauthorizedError extends BaseError {
 	readonly statusCode = HttpStatus.UNAUTHORIZED;
 	constructor(message: string = ErrorMessages.UNAUTHORIZED) {
 		super(message, "UNAUTHORIZED");
 	}
 }
+
 export class ForbiddenError extends BaseError {
 	readonly statusCode = HttpStatus.FORBIDDEN;
 	constructor(message: string = ErrorMessages.FORBIDDEN) {
 		super(message, "FORBIDDEN");
 	}
 }
+
 export class NotFoundError extends BaseError {
 	readonly statusCode = HttpStatus.NOT_FOUND;
 	constructor(message: string = ErrorMessages.NOT_FOUND) {
 		super(message, "NOT_FOUND");
 	}
 }
+
 export class ConflictError extends BaseError {
 	readonly statusCode = HttpStatus.CONFLICT;
 	constructor(message: string = ErrorMessages.CONFLICT) {
 		super(message, "CONFLICT");
 	}
 }
+
 export class UnprocessableError extends BaseError {
 	readonly statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
 	constructor(message: string) {
@@ -61,6 +69,9 @@ export class UnprocessableError extends BaseError {
 	}
 }
 
+/**
+ * Thrown when a slot is concurrently claimed by another request.
+ */
 export class SlotConflictError extends ConflictError {
 	constructor(slot: { date: string; startTime: string }) {
 		super(
@@ -69,6 +80,9 @@ export class SlotConflictError extends ConflictError {
 	}
 }
 
+/**
+ * Thrown when an appointment lifecycle state transition is disallowed.
+ */
 export class InvalidStatusTransitionError extends UnprocessableError {
 	constructor(from: string, to: string) {
 		super(`Cannot transition appointment from ${from} to ${to}`);

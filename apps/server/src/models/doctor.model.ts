@@ -6,13 +6,15 @@ export interface ISession {
 }
 
 export interface ISchedule {
-	workingDays: number[]; // 0=Sun … 6=Sat
-	sessions: ISession[]; // multiple per day, non-overlapping
-	breaks: ISession[]; // no slots generated during these
-	slotDuration: number; // minutes
+	/** Active days of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday) */
+	workingDays: number[];
+	sessions: ISession[];
+	breaks: ISession[];
+	/** Duration of each individual appointment slot in minutes */
+	slotDuration: number;
 }
 
-interface IDoctor {
+export interface IDoctor {
 	user: mongoose.Types.ObjectId;
 	name: string;
 	department: string;
@@ -50,4 +52,5 @@ const doctorSchema = new Schema<IDoctor>(
 );
 
 export const Doctor = mongoose.model<IDoctor>("Doctor", doctorSchema);
+
 export type DoctorDocument = HydratedDocument<IDoctor>;

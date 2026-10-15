@@ -1,8 +1,8 @@
 import mongoose, { type HydratedDocument, Schema } from "mongoose";
 import type { AuditAction } from "../config/constants";
 
-interface IAuditLog {
-	user: mongoose.Types.ObjectId | null; // null = system action
+export interface IAuditLog {
+	user: mongoose.Types.ObjectId | null;
 	role: string;
 	action: AuditAction;
 	entity: string;
@@ -24,9 +24,11 @@ const auditLogSchema = new Schema<IAuditLog>(
 	{ timestamps: false, capped: false },
 );
 
+// Indexes for administrative timeline lookups and entity audits
 auditLogSchema.index({ timestamp: -1 });
 auditLogSchema.index({ user: 1, timestamp: -1 });
 auditLogSchema.index({ entity: 1, entityId: 1, timestamp: -1 });
 
 export const AuditLog = mongoose.model<IAuditLog>("AuditLog", auditLogSchema);
+
 export type AuditLogDocument = HydratedDocument<IAuditLog>;

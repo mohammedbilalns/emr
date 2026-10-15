@@ -4,6 +4,10 @@ import { UnauthorizedError } from "../errors/base.error";
 import { User } from "../models/user.model";
 import { verifyAccessToken } from "../utils/jwt";
 
+/**
+ * Verifies JWT bearer token and performs a database lookup to ensure the user
+ * account is active, attaching the authenticated user identity to `req.user`.
+ */
 export async function requireAuth(
 	req: Request,
 	_res: Response,
@@ -24,7 +28,7 @@ export async function requireAuth(
 		// DB check (not just JWT trust): catches users deactivated after token issuance.
 		// One indexed findById per request — deliberate trade-off, documented.
 		const user = await User.findById(payload.sub);
-		if (!user || !user.isActive) {
+		if (!user?.isActive) {
 			throw new UnauthorizedError();
 		}
 

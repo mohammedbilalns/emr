@@ -12,6 +12,9 @@ function localDateString(d: Date): string {
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/**
+ * Generates discrete time slots for a doctor schedule on a given date, filtering breaks and past slots.
+ */
 export function generateSlots(
 	schedule: ISchedule,
 	date: string,
@@ -54,6 +57,9 @@ export function generateSlots(
 	return slots;
 }
 
+/**
+ * Retrieves consultation slots for a doctor on a specific date, marked as AVAILABLE or BOOKED.
+ */
 export async function getSlots(
 	doctorId: string,
 	date: string,
@@ -68,24 +74,20 @@ export async function getSlots(
 
 	const generated = generateSlots(doctor.schedule, date);
 
-	// One indexed query — { doctor, date, active } matches the partial unique index fields,
-	// so booked-slot lookup is a single index scan. No $lookup, no populated patients.
+	// Matches partial unique index { doctor, date, active: true } for a single index scan
 	const booked = await Appointment.find({
 		doctor: doctorId,
 		date,
 		active: true,
 	})
-		.select("startTime")
+		.select("startTime -_id")
 		.lean();
-	const bookedMap = new Map(booked.map((a) => [a.startTime, String(a._id)]));
 
-	return generated.map((s) => {
-		const appointmentId = bookedMap.get(s.startTime);
-		return {
-			startTime: s.startTime,
-			endTime: s.endTime,
-			status: appointmentId ? "BOOKED" : "AVAILABLE",
-			...(appointmentId && { appointmentId }),
-		};
-	});
+	const bookedSet = new Set(booked.map((a) => a.startTime));
+
+	return generated.map((s) => ({
+		startTime: s.startTime,
+		endTime: s.endTime,
+		status: bookedSet.has(s.startTime) ? "BOOKED" : "AVAILABLE",
+	}));
 }

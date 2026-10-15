@@ -1,11 +1,11 @@
 import type { AuthUser, LoginBody } from "@emr/shared";
-import bcrypt from "bcryptjs";
 import { AUDIT_ACTIONS, ErrorMessages } from "../config/constants";
 import { UnauthorizedError } from "../errors/base.error";
 import { toAuthUser } from "../mappers/to-auth-user";
 import { RefreshToken } from "../models/refresh-token.model";
 import { User, type UserDocument } from "../models/user.model";
 import { audit } from "../utils/audit";
+import { comparePassword, DUMMY_HASH } from "../utils/hash";
 import {
 	hashToken,
 	REFRESH_TTL_MS,
@@ -14,13 +14,6 @@ import {
 	verifyRefreshToken,
 } from "../utils/jwt";
 
-// dummy hash to avoid timing attacks
-const DUMMY_HASH = bcrypt.hashSync("timing-equalizer", 12);
-
-// ---------------------------------------------------------------------------
-// Creates a pair of access and refresh tokens for a given user and persists
-// the refresh token hash in the database for later rotation/revocation.
-// ---------------------------------------------------------------------------
 async function issueTokenPair(
 	user: UserDocument,
 ): Promise<{ accessToken: string; refreshToken: string }> {
@@ -40,9 +33,9 @@ async function issueTokenPair(
 	return { accessToken, refreshToken };
 }
 
-// ---------------------------------------------------------------------------
-// Authenticates a user by email and password.
-// ---------------------------------------------------------------------------
+/**
+ * Authenticates user credentials with timing-safe comparison and issues session tokens.
+ */
 export async function login(
 	body: LoginBody,
 ): Promise<{ user: AuthUser; accessToken: string; refreshToken: string }> {
@@ -50,12 +43,12 @@ export async function login(
 		"+passwordHash",
 	);
 
-	// ONE generic message for all failure modes — no user enumeration
-	const passwordOk = await bcrypt.compare(
+	// Generic message and dummy hash comparison to prevent user enumeration via timing
+	const passwordOk = await comparePassword(
 		body.password,
 		user?.passwordHash ?? DUMMY_HASH,
 	);
-	if (!user || !user.isActive || !passwordOk) {
+	if (!user?.isActive || !passwordOk) {
 		await audit({
 			role: "SYSTEM",
 			action: AUDIT_ACTIONS.LOGIN_FAILED,
@@ -77,13 +70,13 @@ export async function login(
 	return { user: toAuthUser(user), ...tokens };
 }
 
-// ---------------------------------------------------------------------------
-// Refreshes an access token using a valid refresh token.
-// ---------------------------------------------------------------------------
+/**
+ * Rotates an active refresh token and returns a new session token pair.
+ */
 export async function refresh(
 	token: string,
 ): Promise<{ user: AuthUser; accessToken: string; refreshToken: string }> {
-	const payload = verifyRefreshToken(token); // throws → 401 via error handler
+	const payload = verifyRefreshToken(token);
 
 	const claimed = await RefreshToken.findOneAndUpdate(
 		{ tokenHash: hashToken(token), revokedAt: null },
@@ -94,11 +87,11 @@ export async function refresh(
 	}
 
 	const user = await User.findById(payload.sub);
-	if (!user || !user.isActive) {
+	if (!user?.isActive) {
 		throw new UnauthorizedError(ErrorMessages.INVALID_REFRESH_TOKEN);
 	}
 
-	const tokens = await issueTokenPair(user); //rotation
+	const tokens = await issueTokenPair(user);
 	await audit({
 		userId: user.id,
 		role: user.role,
@@ -110,9 +103,9 @@ export async function refresh(
 	return { user: toAuthUser(user), ...tokens };
 }
 
-// ---------------------------------------------------------------------------
-// Revokes a refresh token by marking it as revoked in the database.
-// ---------------------------------------------------------------------------
+/**
+ * Revokes an active refresh token session and logs the audit event.
+ */
 export async function logout(
 	token: string | undefined,
 	actor: AuthUser,

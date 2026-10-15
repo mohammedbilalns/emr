@@ -16,7 +16,8 @@ export async function createAppointmentHandler(
 	const user = req.user as AuthUser;
 	const body = req.validated?.body as CreateAppointmentBody;
 	const appointment = await appointmentService.bookAppointment(body, user);
-	return sendSuccess(res, appointment, {
+	return sendSuccess(res, {
+		data: appointment,
 		message: "Appointment booked successfully",
 		status: HttpStatus.CREATED,
 	});
@@ -29,7 +30,8 @@ export async function listAppointmentsHandler(
 	const user = req.user as AuthUser;
 	const query = req.validated?.query as AppointmentListQuery;
 	const result = await appointmentService.listAppointments(query, user);
-	return sendSuccess(res, result.items, {
+	return sendSuccess(res, {
+		data: result.items,
 		message: "Appointments retrieved",
 		meta: buildPaginationMeta(result.page, result.limit, result.total),
 	});
@@ -42,7 +44,10 @@ export async function getAppointmentHandler(
 	const user = req.user as AuthUser;
 	const params = req.validated?.params as { id: string };
 	const appointment = await appointmentService.getAppointment(params.id, user);
-	return sendSuccess(res, appointment, { message: "Appointment retrieved" });
+	return sendSuccess(res, {
+		data: appointment,
+		message: "Appointment retrieved",
+	});
 }
 
 export async function updateAppointmentHandler(
@@ -57,7 +62,8 @@ export async function updateAppointmentHandler(
 		body,
 		user,
 	);
-	return sendSuccess(res, appointment, {
+	return sendSuccess(res, {
+		data: appointment,
 		message: "Appointment updated successfully",
 	});
 }
@@ -72,7 +78,8 @@ export async function cancelAppointmentHandler(
 		params.id,
 		user,
 	);
-	return sendSuccess(res, appointment, {
+	return sendSuccess(res, {
+		data: appointment,
 		message: "Appointment cancelled successfully",
 	});
 }
@@ -84,7 +91,8 @@ export async function markArrivedHandler(
 	const user = req.user as AuthUser;
 	const params = req.validated?.params as { id: string };
 	const appointment = await appointmentService.markArrived(params.id, user);
-	return sendSuccess(res, appointment, {
+	return sendSuccess(res, {
+		data: appointment,
 		message: "Patient marked as arrived",
 	});
 }
@@ -99,7 +107,8 @@ export async function completeAppointmentHandler(
 		params.id,
 		user,
 	);
-	return sendSuccess(res, appointment, {
+	return sendSuccess(res, {
+		data: appointment,
 		message: "Appointment marked as completed",
 	});
 }

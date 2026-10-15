@@ -9,11 +9,10 @@ import { clearRefreshCookie, setRefreshCookie } from "../utils/cookies";
 export async function login(req: Request, res: Response): Promise<Response> {
 	const result = await authService.login(req.validated?.body as LoginBody);
 	setRefreshCookie(res, result.refreshToken);
-	return sendSuccess(
-		res,
-		{ user: result.user, accessToken: result.accessToken },
-		{ message: "Logged in successfully" },
-	);
+	return sendSuccess(res, {
+		data: { user: result.user, accessToken: result.accessToken },
+		message: "Logged in successfully",
+	});
 }
 
 export async function refresh(req: Request, res: Response): Promise<Response> {
@@ -22,21 +21,23 @@ export async function refresh(req: Request, res: Response): Promise<Response> {
 
 	const result = await authService.refresh(token);
 	setRefreshCookie(res, result.refreshToken);
-	return sendSuccess(
-		res,
-		{ user: result.user, accessToken: result.accessToken },
-		{ message: "Token refreshed" },
-	);
+	return sendSuccess(res, {
+		data: { user: result.user, accessToken: result.accessToken },
+		message: "Token refreshed",
+	});
 }
 
 export async function logout(req: Request, res: Response): Promise<Response> {
 	const user = req.user as AuthUser;
-	if (!user) return sendSuccess(res, null, { message: "No user session" });
+	if (!user) return sendSuccess(res, { message: "No user session" });
 	await authService.logout(req.cookies?.[COOKIE_NAMES.REFRESH_TOKEN], user);
 	clearRefreshCookie(res);
-	return sendSuccess(res, null, { message: "Logged out successfully" });
+	return sendSuccess(res, { message: "Logged out successfully" });
 }
 
 export function me(req: Request, res: Response): Response {
-	return sendSuccess(res, req.user as AuthUser, { message: "Session valid" });
+	return sendSuccess(res, {
+		data: req.user as AuthUser,
+		message: "Session valid",
+	});
 }

@@ -7,6 +7,7 @@ import { validate } from "../../middlewares/validate.middleware";
 
 const router = Router();
 
+// Search patients by name, patient code, or mobile phone number
 router.get(
 	"/search",
 	requireAuth,

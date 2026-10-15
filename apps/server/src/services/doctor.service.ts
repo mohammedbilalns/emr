@@ -12,6 +12,9 @@ import { Doctor } from "../models/doctor.model";
 import { User } from "../models/user.model";
 import { audit } from "../utils/audit";
 
+/**
+ * Creates a doctor user account and clinical profile with compensating rollback on failure.
+ */
 export async function createDoctor(
 	body: CreateDoctorBody,
 	actor: AuthUser,
@@ -45,12 +48,15 @@ export async function createDoctor(
 		});
 		return toDoctorDto(doctor);
 	} catch (error) {
-		// Compensating cleanup: never leave an orphaned login without a doctor profile
+		// Compensating cleanup: delete created user if doctor profile creation fails
 		await User.deleteOne({ _id: user._id }).catch(() => null);
 		throw error;
 	}
 }
 
+/**
+ * Creates a new receptionist staff user account.
+ */
 export async function createReceptionist(
 	body: CreateStaffBody,
 	actor: AuthUser,
@@ -75,11 +81,17 @@ export async function createReceptionist(
 	return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
+/**
+ * Lists all active doctors ordered by name.
+ */
 export async function listDoctors(): Promise<DoctorDto[]> {
 	const doctors = await Doctor.find({ isActive: true }).sort({ name: 1 });
 	return doctors.map(toDoctorDto);
 }
 
+/**
+ * Updates a doctor's weekly consultation schedule.
+ */
 export async function updateDoctorSchedule(
 	doctorId: string,
 	body: UpdateDoctorScheduleBody,
@@ -88,7 +100,7 @@ export async function updateDoctorSchedule(
 	const doctor = await Doctor.findById(doctorId);
 	if (!doctor) throw new NotFoundError("Doctor not found");
 	doctor.schedule = body.schedule;
-	await doctor.save(); // runs mongoose-level constraints as a storage safety net
+	await doctor.save();
 	await audit({
 		userId: actor.id,
 		role: actor.role,

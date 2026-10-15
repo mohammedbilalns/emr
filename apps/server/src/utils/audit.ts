@@ -3,28 +3,19 @@ import type { AuditAction } from "../config/constants";
 import logger from "../logging/logger";
 import { AuditLog } from "../models/audit-log.model";
 
-// ---------------------------------------------------------------------------
-// Audit logging utility.
-// ---------------------------------------------------------------------------
-
-interface AuditEntry {
-	// Identifier of the user who triggered the action (may be null for system events)
+export interface AuditEntry {
 	userId?: string | null;
-	// Role of the actor: either a real user role or "SYSTEM" for automated actions
 	role: Role | "SYSTEM";
-	// The action that was performed (e.g., LOGIN, LOGOUT, TOKEN_REFRESHED)
 	action: AuditAction;
-	// Name of the entity affected (e.g., "User", "Appointment", "Doctor")
 	entity: string;
-	// Identifier of the specific entity instance (optional)
 	entityId?: string;
-	// Additional key-value details (e.g., email, IP, error codes)
 	details?: Record<string, unknown>;
 }
 
-// ---------------------------------------------------------------------------
-// Logs an audit entry by creating an AuditLog document in the database.
-// ---------------------------------------------------------------------------
+/**
+ * Persists an audit log document. Swallows and logs write failures so
+ * non-critical audit errors do not disrupt the primary request lifecycle.
+ */
 export async function audit(entry: AuditEntry): Promise<void> {
 	try {
 		await AuditLog.create({
@@ -37,7 +28,6 @@ export async function audit(entry: AuditEntry): Promise<void> {
 			timestamp: new Date(),
 		});
 	} catch (error) {
-		// Log the failure so operators know audit writing did not succeed,
 		logger.error({ error, action: entry.action }, "Audit write failed");
 	}
 }

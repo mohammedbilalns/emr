@@ -9,5 +9,8 @@ export async function searchPatientsHandler(
 ): Promise<Response> {
 	const query = req.validated?.query as PatientSearchQuery;
 	const patients = await patientService.searchPatients(query.q, query.limit);
-	return sendSuccess(res, patients, { message: "Patients retrieved" });
+	return sendSuccess(res, {
+		data: patients,
+		message: "Patients retrieved",
+	});
 }

@@ -8,7 +8,8 @@ export async function getSlotsController(
 	res: Response,
 ): Promise<Response> {
 	const query = req.validated?.query as SlotsQuery;
-	return sendSuccess(res, await getSlots(query.doctorId, query.date), {
+	return sendSuccess(res, {
+		data: await getSlots(query.doctorId, query.date),
 		message: "Slots retrieved",
 	});
 }

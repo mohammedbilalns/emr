@@ -1,8 +1,8 @@
 import { ROLES, type Role } from "@emr/shared";
-import bcrypt from "bcryptjs";
 import mongoose, { type HydratedDocument, type Model, Schema } from "mongoose";
+import { comparePassword, hashPassword } from "../utils/hash";
 
-interface IUser {
+export interface IUser {
 	name: string;
 	email: string;
 	passwordHash: string;
@@ -10,15 +10,15 @@ interface IUser {
 	isActive: boolean;
 }
 
-interface IUserMethods {
+export interface IUserMethods {
 	comparePassword(candidate: string): Promise<boolean>;
 }
 
-interface IUserStatics {
+export interface IUserStatics {
 	hashPassword(plain: string): Promise<string>;
 }
 
-type UserModel = Model<IUser, Record<string, never>, IUserMethods> &
+export type UserModel = Model<IUser, Record<string, never>, IUserMethods> &
 	IUserStatics;
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
@@ -38,11 +38,12 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 	{ timestamps: true },
 );
 
-userSchema.statics.hashPassword = (plain: string) => bcrypt.hash(plain, 12);
+userSchema.statics.hashPassword = (plain: string) => hashPassword(plain);
 
 userSchema.methods.comparePassword = function (candidate: string) {
-	return bcrypt.compare(candidate, this.passwordHash);
+	return comparePassword(candidate, this.passwordHash);
 };
 
 export const User = mongoose.model<IUser, UserModel>("User", userSchema);
+
 export type UserDocument = HydratedDocument<IUser, IUserMethods>;

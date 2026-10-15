@@ -1,7 +1,7 @@
 import mongoose, { type HydratedDocument, Schema } from "mongoose";
 
-interface ICounter {
-	_id: string; // e.g. "patient"
+export interface ICounter {
+	_id: string;
 	seq: number;
 }
 
@@ -11,4 +11,5 @@ const counterSchema = new Schema<ICounter>({
 });
 
 export const Counter = mongoose.model<ICounter>("Counter", counterSchema);
+
 export type CounterDocument = HydratedDocument<ICounter>;

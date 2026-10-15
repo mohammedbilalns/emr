@@ -7,7 +7,7 @@ import { validate } from "../../middlewares/validate.middleware";
 
 const router = Router();
 
-// staff.routes.ts
+// Create a new receptionist user account
 router.post(
 	"/receptionists",
 	requireAuth,

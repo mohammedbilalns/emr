@@ -4,24 +4,17 @@ import type { Secret, SignOptions } from "jsonwebtoken";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
-// ---------------------------------------------------------------------------
-// JWT utility functions for signing, verifying, and hashing tokens.
-// ---------------------------------------------------------------------------
-
-// TTL unit constants for parseTtlMs validation.
-// Seconds (s), minutes (m), hours (h), days (d) map to millisecond values.
 const TTL_UNITS = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 } as const;
+
 export const REFRESH_TTL_MS = parseTtlMs(env.JWT_REFRESH_TTL);
 
 export interface AccessTokenPayload {
-	// JWT payload claims: subject, role, and email for access token identification
 	sub: string;
 	role: Role;
 	email: string;
 }
 
 export interface RefreshTokenPayload {
-	// JWT payload claim: subject (user ID) for refresh token identification
 	sub: string;
 }
 
@@ -59,10 +52,16 @@ export function verifyRefreshToken(token: string): RefreshTokenPayload {
 	) as RefreshTokenPayload;
 }
 
+/**
+ * Generates a SHA-256 hash of a refresh token to avoid persisting plaintext tokens in the database.
+ */
 export function hashToken(token: string): string {
 	return createHash("sha256").update(token).digest("hex");
 }
 
+/**
+ * Parses a duration string with unit suffix ('s', 'm', 'h', 'd') into milliseconds.
+ */
 export function parseTtlMs(ttl: string): number {
 	const match = /^(\d+)([smhd])$/.exec(ttl);
 	if (!match) throw new Error(`Invalid TTL format: ${ttl}`);
