@@ -90,6 +90,75 @@ describe("Authentication API Integration Tests", () => {
 			expect(newCookies).toBeDefined();
 		});
 
+		it("detects replay attack: rejects reuse of already rotated refresh token", async () => {
+			const loginRes = await request(app).post("/api/v1/auth/login").send({
+				email: "sarah.chen@emr.local",
+				password: "Doctor@12345",
+			});
+
+			const cookieHeader = loginRes.headers["set-cookie"];
+			const originalCookies = Array.isArray(cookieHeader)
+				? cookieHeader
+				: typeof cookieHeader === "string"
+					? [cookieHeader]
+					: [];
+
+			// First rotation: succeeds and marks original token as revoked
+			const firstRefresh = await request(app)
+				.post("/api/v1/auth/refresh")
+				.set("Cookie", originalCookies);
+			expect(firstRefresh.status).toBe(200);
+
+			// Replay attempt: sending originalCookies a second time must be rejected
+			const replayRefresh = await request(app)
+				.post("/api/v1/auth/refresh")
+				.set("Cookie", originalCookies);
+			expect(replayRefresh.status).toBe(401);
+			expect(replayRefresh.body.success).toBe(false);
+			expect(replayRefresh.body.message).toMatch(/expired|invalid/i);
+		});
+
+		it("supports sequential token rotation chain across multiple hops", async () => {
+			const loginRes = await request(app).post("/api/v1/auth/login").send({
+				email: "sarah.chen@emr.local",
+				password: "Doctor@12345",
+			});
+
+			const loginCookies = loginRes.headers["set-cookie"];
+			const hop1Cookies = Array.isArray(loginCookies)
+				? loginCookies
+				: typeof loginCookies === "string"
+					? [loginCookies]
+					: [];
+
+			// Hop 1: Login cookie -> Refresh -> Hop 2 cookie
+			const hop1Res = await request(app)
+				.post("/api/v1/auth/refresh")
+				.set("Cookie", hop1Cookies);
+			expect(hop1Res.status).toBe(200);
+
+			const hop2Header = hop1Res.headers["set-cookie"];
+			const hop2Cookies = Array.isArray(hop2Header)
+				? hop2Header
+				: typeof hop2Header === "string"
+					? [hop2Header]
+					: [];
+
+			// Hop 2: Hop 2 cookie -> Refresh -> Hop 3 cookie
+			const hop2Res = await request(app)
+				.post("/api/v1/auth/refresh")
+				.set("Cookie", hop2Cookies);
+			expect(hop2Res.status).toBe(200);
+			const finalAccessToken = hop2Res.body.data.accessToken;
+
+			// Verify final access token from rotation chain authenticates successfully
+			const meRes = await request(app)
+				.get("/api/v1/auth/me")
+				.set("Authorization", `Bearer ${finalAccessToken}`);
+			expect(meRes.status).toBe(200);
+			expect(meRes.body.data.email).toBe("sarah.chen@emr.local");
+		});
+
 		it("rejects request without refresh cookie with 401 Unauthorized", async () => {
 			const res = await request(app).post("/api/v1/auth/refresh");
 
@@ -106,6 +175,39 @@ describe("Authentication API Integration Tests", () => {
 
 			expect(res.status).toBe(401);
 			expect(res.body.success).toBe(false);
+		});
+	});
+
+	describe("POST /api/v1/auth/logout", () => {
+		it("revokes active refresh token so it cannot be refreshed after sign out", async () => {
+			const loginRes = await request(app).post("/api/v1/auth/login").send({
+				email: "sarah.chen@emr.local",
+				password: "Doctor@12345",
+			});
+
+			const cookieHeader = loginRes.headers["set-cookie"];
+			const cookies = Array.isArray(cookieHeader)
+				? cookieHeader
+				: typeof cookieHeader === "string"
+					? [cookieHeader]
+					: [];
+			const accessToken = loginRes.body.data.accessToken;
+
+			// Logout revokes session in DB and clears cookie
+			const logoutRes = await request(app)
+				.post("/api/v1/auth/logout")
+				.set("Authorization", `Bearer ${accessToken}`)
+				.set("Cookie", cookies);
+
+			expect(logoutRes.status).toBe(200);
+
+			// Attempting to refresh with the logged-out cookie must be rejected with 401
+			const refreshRes = await request(app)
+				.post("/api/v1/auth/refresh")
+				.set("Cookie", cookies);
+
+			expect(refreshRes.status).toBe(401);
+			expect(refreshRes.body.success).toBe(false);
 		});
 	});
 

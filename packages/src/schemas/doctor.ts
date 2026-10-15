@@ -57,7 +57,7 @@ export const scheduleSchema = z
 
 export const createDoctorSchema = z.object({
 	name: z.string().trim().min(2).max(80),
-	email: z.string().trim().email(),
+	email: z.email(),
 	password: z.string().min(8),
 	department: z.string().trim().min(2).max(60),
 	schedule: scheduleSchema,
@@ -73,7 +73,7 @@ export type UpdateDoctorScheduleBody = z.infer<
 
 export const createStaffSchema = z.object({
 	name: z.string().trim().min(2).max(80),
-	email: z.string().trim().email(),
+	email: z.email(),
 	password: z.string().min(8),
 });
 export type CreateStaffBody = z.infer<typeof createStaffSchema>;
