@@ -8,6 +8,7 @@ import { ClipboardList, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../../../shared/components/ui/Button";
+import { RealtimeIndicator } from "../../../shared/components/ui/RealtimeIndicator";
 import { useAuth } from "../../../shared/context/AuthContext";
 import { listDoctorsApi } from "../../scheduler/api/scheduler.api";
 import { AppointmentDetailsModal } from "../components/AppointmentDetailsModal";
@@ -113,6 +114,7 @@ export function AppointmentsPage() {
 				</div>
 
 				<div className="flex items-center gap-2">
+					<RealtimeIndicator />
 					<Button
 						variant="outline"
 						size="sm"

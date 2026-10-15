@@ -126,8 +126,15 @@ export async function bookAppointment(
 			entity: "Appointment",
 			entityId: appointment.id,
 		});
-		emitAppointmentCreated(doctor.id, body.date);
-		return toAppointmentDto(appointment);
+		const dto = toAppointmentDto(appointment);
+		emitAppointmentCreated({
+			appointment: dto,
+			doctorId: doctor.id,
+			date: body.date,
+			startTime: slot.startTime,
+			endTime: slot.endTime,
+		});
+		return dto;
 	} catch (error) {
 		if (inTx) await session.abortTransaction();
 		if (isDuplicateKey(error, "startTime")) {

@@ -9,6 +9,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../../shared/components/ui/Card";
+import { RealtimeIndicator } from "../../../shared/components/ui/RealtimeIndicator";
+import { useSchedulerRoom } from "../../../shared/socket/use-realtime";
 import { listDoctorsApi } from "../api/scheduler.api";
 import { BookingModal } from "../components/BookingModal";
 import { DateCalendarPicker } from "../components/DateCalendarPicker";
@@ -57,6 +59,9 @@ export function SchedulerPage() {
 		refetch: refetchSlots,
 	} = useSlotsQuery(selectedDoctorId, selectedDate);
 
+	// Subscribe to targeted real-time room updates for this doctor and date
+	useSchedulerRoom(selectedDoctorId, selectedDate);
+
 	const currentDoctor = doctors.find((d) => d.id === selectedDoctorId);
 
 	const handleSlotSelect = (slot: SlotDto) => {
@@ -79,6 +84,7 @@ export function SchedulerPage() {
 				</div>
 
 				<div className="flex items-center gap-2">
+					<RealtimeIndicator />
 					<Button
 						variant="outline"
 						size="sm"

@@ -15,7 +15,10 @@ import { audit } from "../../audit";
 import { Doctor } from "../../doctors";
 import { toAppointmentDto } from "../appointment.mapper";
 import { Appointment } from "../appointment.model";
-import { emitAppointmentUpdated } from "../appointment-events";
+import {
+	emitAppointmentCancelled,
+	emitAppointmentUpdated,
+} from "../appointment-events";
 
 /**
  * Updates appointment purpose or consultation notes.
@@ -57,8 +60,16 @@ export async function updateAppointment(
 		entity: "Appointment",
 		entityId: id,
 	});
-	emitAppointmentUpdated(id, String(updated.doctor), updated.date);
-	return toAppointmentDto(updated);
+	const dto = toAppointmentDto(updated);
+	emitAppointmentUpdated({
+		appointment: dto,
+		doctorId: String(updated.doctor),
+		date: updated.date,
+		startTime: updated.startTime,
+		endTime: updated.endTime,
+		status: updated.status,
+	});
+	return dto;
 }
 
 /**
@@ -111,8 +122,26 @@ export async function transitionStatus(
 		entity: "Appointment",
 		entityId: id,
 	});
-	emitAppointmentUpdated(id, String(updated.doctor), updated.date);
-	return toAppointmentDto(updated);
+	const dto = toAppointmentDto(updated);
+	if (to === "CANCELLED") {
+		emitAppointmentCancelled({
+			appointment: dto,
+			doctorId: String(updated.doctor),
+			date: updated.date,
+			startTime: updated.startTime,
+			endTime: updated.endTime,
+		});
+	} else {
+		emitAppointmentUpdated({
+			appointment: dto,
+			doctorId: String(updated.doctor),
+			date: updated.date,
+			startTime: updated.startTime,
+			endTime: updated.endTime,
+			status: updated.status,
+		});
+	}
+	return dto;
 }
 
 export const markArrived = (id: string, actor: AuthUser) =>
