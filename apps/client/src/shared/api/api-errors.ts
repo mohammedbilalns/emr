@@ -1,0 +1,81 @@
+import type { ApiError } from "@emr/shared";
+import axios, { type AxiosError } from "axios";
+
+export interface FieldError {
+	path: string;
+	message: string;
+}
+
+export class ApiClientError extends Error {
+	public readonly statusCode?: number;
+	public readonly fieldErrors: FieldError[];
+
+	constructor(
+		message: string,
+		statusCode?: number,
+		fieldErrors: FieldError[] = [],
+	) {
+		super(message);
+		this.name = "ApiClientError";
+		this.statusCode = statusCode;
+		this.fieldErrors = fieldErrors;
+	}
+}
+
+function isApiErrorPayload(data: unknown): data is ApiError {
+	return (
+		typeof data === "object" &&
+		data !== null &&
+		"success" in data &&
+		(data as { success: unknown }).success === false &&
+		"message" in data &&
+		typeof (data as { message: unknown }).message === "string"
+	);
+}
+
+export function normalizeError(error: unknown): ApiClientError {
+	if (error instanceof ApiClientError) {
+		return error;
+	}
+
+	if (axios.isAxiosError(error)) {
+		const axiosErr = error as AxiosError;
+		const status = axiosErr.response?.status;
+		const data = axiosErr.response?.data;
+
+		if (isApiErrorPayload(data)) {
+			const fieldErrors: FieldError[] = Array.isArray(data.errors)
+				? data.errors.map((e) => ({
+						path: String(e.path),
+						message: String(e.message),
+					}))
+				: [];
+
+			return new ApiClientError(data.message, status, fieldErrors);
+		}
+
+		if (typeof data === "string" && data.trim().length > 0) {
+			return new ApiClientError(data, status);
+		}
+
+		return new ApiClientError(
+			axiosErr.message || "Network request failed",
+			status,
+		);
+	}
+
+	if (error instanceof Error) {
+		return new ApiClientError(error.message);
+	}
+
+	return new ApiClientError("An unexpected error occurred");
+}
+
+export function getErrorMessage(
+	error: unknown,
+	fallback = "An error occurred",
+): string {
+	if (!error) return fallback;
+	const normalized = normalizeError(error);
+	return normalized.message || fallback;
+}
