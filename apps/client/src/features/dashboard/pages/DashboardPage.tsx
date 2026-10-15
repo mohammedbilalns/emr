@@ -20,7 +20,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../../shared/components/ui/Card";
-import { RealtimeIndicator } from "../../../shared/components/ui/RealtimeIndicator";
 import { useAuth } from "../../../shared/context/AuthContext";
 import { listAppointmentsApi } from "../../appointments/api/appointments.api";
 import { useAppointmentActions } from "../../appointments/hooks/use-appointment-actions";
@@ -97,7 +96,6 @@ export function DashboardPage() {
 				</div>
 
 				<div className="flex items-center gap-2">
-					<RealtimeIndicator />
 					{(isReceptionist || isSuperAdmin) && (
 						<Link to="/scheduler">
 							<Button
