@@ -3,7 +3,9 @@ import mongoose, { type HydratedDocument, Schema } from "mongoose";
 
 interface IAppointment {
 	doctor: mongoose.Types.ObjectId;
+	doctorName: string;
 	patient: mongoose.Types.ObjectId;
+	patientCode: string;
 	patientName: string;
 	patientMobile: string;
 	department: string;
@@ -21,7 +23,9 @@ interface IAppointment {
 const appointmentSchema = new Schema<IAppointment>(
 	{
 		doctor: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
+		doctorName: { type: String, required: true },
 		patient: { type: Schema.Types.ObjectId, ref: "Patient", required: true },
+		patientCode: { type: String, required: true },
 		patientName: { type: String, required: true },
 		patientMobile: { type: String, required: true, index: true },
 		department: { type: String, required: true },

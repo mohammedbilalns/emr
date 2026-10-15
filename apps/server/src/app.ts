@@ -6,8 +6,10 @@ import { env } from "./config/env";
 import { errorHandler } from "./middlewares/error-handler.middleware";
 import { notFoundHandler } from "./middlewares/notfound.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
-import authRoutes from "./routes/auth.routes";
+import appointmentRoutes from "./routes/v1/appointments.routes";
+import authRoutes from "./routes/v1/auth.routes";
 import doctorRoutes from "./routes/v1/doctors.routes";
+import patientRoutes from "./routes/v1/patients.routes";
 import slotRoutes from "./routes/v1/slots.routes";
 import staffRoutes from "./routes/v1/staff.routes";
 
@@ -46,6 +48,8 @@ export function createApp() {
 	app.use(`${API_PREFIX}/doctors`, doctorRoutes);
 	app.use(`${API_PREFIX}/slots`, slotRoutes);
 	app.use(`${API_PREFIX}/staff`, staffRoutes);
+	app.use(`${API_PREFIX}/patients`, patientRoutes);
+	app.use(`${API_PREFIX}/appointments`, appointmentRoutes);
 
 	// 404 handler for unmatched routes
 	app.use(notFoundHandler);

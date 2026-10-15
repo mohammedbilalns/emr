@@ -60,3 +60,17 @@ export class UnprocessableError extends BaseError {
 		super(message, "UNPROCESSABLE");
 	}
 }
+
+export class SlotConflictError extends ConflictError {
+	constructor(slot: { date: string; startTime: string }) {
+		super(
+			`The ${slot.date} ${slot.startTime} slot was just booked by someone else`,
+		);
+	}
+}
+
+export class InvalidStatusTransitionError extends UnprocessableError {
+	constructor(from: string, to: string) {
+		super(`Cannot transition appointment from ${from} to ${to}`);
+	}
+}
