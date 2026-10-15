@@ -20,6 +20,8 @@
 		"typescript": "^7.0.2"
 	},
 	"dependencies": {
+		"@emr/shared": "*",
+		"bcryptjs": "^3.0.3",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.6",
 		"dotenv": "^18.0.8",
