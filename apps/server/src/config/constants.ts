@@ -49,4 +49,5 @@ export const AUDIT_ACTIONS = {
 	APPOINTMENT_CANCELLED: "APPOINTMENT_CANCELLED",
 	PATIENT_ARRIVED: "PATIENT_ARRIVED",
 } as const;
+
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

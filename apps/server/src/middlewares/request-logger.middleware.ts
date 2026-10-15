@@ -1,6 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 import logger from "../logging/logger";
 
+/**
+ * Logs HTTP request method, path, status, and duration in milliseconds using high-resolution timestamps.
+ */
 export function requestLogger(
 	req: Request,
 	res: Response,

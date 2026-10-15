@@ -4,12 +4,19 @@ export interface PaginationMeta {
 	total: number;
 	totalPages: number;
 }
-export interface ApiSuccess<T> {
-	success: true;
-	message: string;
-	data: T;
-	meta?: PaginationMeta;
-}
+export type ApiSuccess<T = undefined> = [T] extends [undefined]
+	? {
+			success: true;
+			message: string;
+			data?: undefined;
+			meta?: PaginationMeta;
+		}
+	: {
+			success: true;
+			message: string;
+			data: T;
+			meta?: PaginationMeta;
+		};
 
 export interface ApiError {
 	success: false;

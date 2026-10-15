@@ -21,6 +21,9 @@ const envSchema = z.object({
 
 const parsed = envSchema.parse(process.env);
 
+/**
+ * Validated application runtime environment variables and derived helper flags.
+ */
 export const env = {
 	...parsed,
 	isDev: parsed.NODE_ENV === "development",

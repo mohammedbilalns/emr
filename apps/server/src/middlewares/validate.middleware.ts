@@ -2,19 +2,16 @@ import type { NextFunction, Request, Response } from "express";
 import { ZodError, type ZodType } from "zod";
 import { ValidationError } from "../errors/base.error";
 
-interface RequestSchemas {
+export interface RequestSchemas {
 	body?: ZodType;
 	params?: ZodType;
 	query?: ZodType;
 }
 
-declare module "express-serve-static-core" {
-	interface Request {
-		validated?: { body?: unknown; params?: unknown; query?: unknown };
-		user?: { id: string; role: string };
-	}
-}
-
+/**
+ * Validates `req.body`, `req.params`, and `req.query` against Zod schemas,
+ * storing parsed data in `req.validated` and forwarding structured validation errors.
+ */
 export const validate =
 	(schemas: RequestSchemas) =>
 	(req: Request, _res: Response, next: NextFunction): void => {

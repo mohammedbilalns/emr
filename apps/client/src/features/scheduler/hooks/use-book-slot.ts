@@ -1,0 +1,54 @@
+import type { AppointmentDto, CreateAppointmentBody } from "@emr/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	ApiClientError,
+	getErrorMessage,
+} from "../../../shared/api/api-errors";
+import { useToast } from "../../../shared/hooks/use-toast";
+import { bookAppointmentApi } from "../api/scheduler.api";
+
+/**
+ * Mutation hook for booking an appointment slot.
+ * Automatically invalidates slot and dashboard caches, with targeted 409 conflict handling.
+ */
+export function useBookSlot(onSuccessCallback?: () => void) {
+	const queryClient = useQueryClient();
+	const toast = useToast();
+
+	return useMutation<AppointmentDto, unknown, CreateAppointmentBody>({
+		mutationFn: (body: CreateAppointmentBody) => bookAppointmentApi(body),
+		onSuccess: (_data, variables) => {
+			toast.success(
+				`Appointment confirmed for ${variables.startTime}`,
+				"Booking Confirmed",
+			);
+
+			// Invalidate relevant caches
+			void queryClient.invalidateQueries({
+				queryKey: ["slots", variables.doctorId, variables.date],
+			});
+			void queryClient.invalidateQueries({ queryKey: ["appointments"] });
+			void queryClient.invalidateQueries({ queryKey: ["dashboard-metrics"] });
+
+			if (onSuccessCallback) {
+				onSuccessCallback();
+			}
+		},
+		onError: (error, variables) => {
+			const message = getErrorMessage(error, "Failed to book appointment");
+
+			// Refresh slots cache so UI updates with latest availability
+			void queryClient.invalidateQueries({
+				queryKey: ["slots", variables.doctorId, variables.date],
+			});
+
+			// Specific handling for 409 conflict
+			if (error instanceof ApiClientError && error.statusCode === 409) {
+				toast.warning(message, "Time Slot Conflict");
+				return;
+			}
+
+			toast.error(message, "Booking Failed");
+		},
+	});
+}

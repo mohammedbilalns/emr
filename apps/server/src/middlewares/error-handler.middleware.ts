@@ -8,6 +8,11 @@ import logger from "../logging/logger";
 
 const { MongoServerError } = mongoose.mongo;
 
+/**
+ * Global Express error handling middleware.
+ * Translates domain errors, Zod validation issues, JWT expiration,
+ * duplicate MongoDB keys (E11000), and CastErrors into standard HTTP JSON responses.
+ */
 export function errorHandler(
 	err: unknown,
 	_req: Request,

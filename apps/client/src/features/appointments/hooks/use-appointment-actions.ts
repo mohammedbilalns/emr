@@ -1,0 +1,104 @@
+import type { UpdateAppointmentBody } from "@emr/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "../../../shared/api/api-errors";
+import { useToast } from "../../../shared/hooks/use-toast";
+import {
+	cancelAppointmentApi,
+	completeAppointmentApi,
+	markArrivedApi,
+	updateAppointmentApi,
+} from "../api/appointments.api";
+
+/**
+ * Mutations for appointment lifecycle actions (arrived, completed, cancelled, notes update),
+ * synchronizing appointment and slot query caches upon completion.
+ */
+export function useAppointmentActions() {
+	const queryClient = useQueryClient();
+	const toast = useToast();
+
+	const invalidateAll = () => {
+		void queryClient.invalidateQueries({ queryKey: ["appointments"] });
+		void queryClient.invalidateQueries({ queryKey: ["slots"] });
+		void queryClient.invalidateQueries({ queryKey: ["dashboard-metrics"] });
+	};
+
+	const markArrivedMutation = useMutation({
+		mutationFn: (id: string) => markArrivedApi(id),
+		onSuccess: () => {
+			toast.success("Patient marked as arrived at clinic", "Status Updated");
+			invalidateAll();
+		},
+		onError: (error) => {
+			toast.error(
+				getErrorMessage(error, "Failed to update arrival status"),
+				"Status Error",
+			);
+			invalidateAll();
+		},
+	});
+
+	const completeMutation = useMutation({
+		mutationFn: (id: string) => completeAppointmentApi(id),
+		onSuccess: () => {
+			toast.success(
+				"Consultation marked as completed",
+				"Appointment Completed",
+			);
+			invalidateAll();
+		},
+		onError: (error) => {
+			toast.error(
+				getErrorMessage(error, "Failed to complete appointment"),
+				"Status Error",
+			);
+			invalidateAll();
+		},
+	});
+
+	const cancelMutation = useMutation({
+		mutationFn: (id: string) => cancelAppointmentApi(id),
+		onSuccess: () => {
+			toast.info(
+				"Appointment has been cancelled. The slot is now re-opened for booking.",
+				"Appointment Cancelled",
+			);
+			invalidateAll();
+		},
+		onError: (error) => {
+			toast.error(
+				getErrorMessage(error, "Failed to cancel appointment"),
+				"Cancellation Error",
+			);
+			invalidateAll();
+		},
+	});
+
+	const updateMutation = useMutation({
+		mutationFn: ({ id, body }: { id: string; body: UpdateAppointmentBody }) =>
+			updateAppointmentApi(id, body),
+		onSuccess: () => {
+			toast.success("Consultation notes & purpose saved", "Updated");
+			invalidateAll();
+		},
+		onError: (error) => {
+			toast.error(
+				getErrorMessage(error, "Failed to save appointment notes"),
+				"Update Error",
+			);
+		},
+	});
+
+	return {
+		markArrived: markArrivedMutation.mutate,
+		isMarkingArrived: markArrivedMutation.isPending,
+		completeAppointment: completeMutation.mutate,
+		isCompleting: completeMutation.isPending,
+		cancelAppointment: cancelMutation.mutate,
+		isCancelling: cancelMutation.isPending,
+		updateAppointment: updateMutation.mutate,
+		isUpdating: updateMutation.isPending,
+		updateError: updateMutation.error,
+		resetUpdate: updateMutation.reset,
+	};
+}

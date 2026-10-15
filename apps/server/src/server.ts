@@ -9,6 +9,7 @@ async function bootstrap(): Promise<void> {
 	await connectDatabase();
 
 	const httpServer = createServer(createApp());
+
 	httpServer.listen(env.PORT, () => {
 		logger.info(`API listening on http://localhost:${env.PORT}${API_PREFIX}`);
 	});
@@ -17,10 +18,10 @@ async function bootstrap(): Promise<void> {
 		logger.info({ signal }, "Shutting down gracefully");
 		httpServer.close(() => {
 			disconnectDatabase()
-				.catch((error) => logger.error({ error }, "Disconnect failed"))
+				.catch((error) => logger.error({ err: error }, "Disconnect failed"))
 				.finally(() => process.exit(0));
 		});
-		setTimeout(() => process.exit(1), 10_000).unref(); // drain safety net
+		setTimeout(() => process.exit(1), 10_000).unref();
 	};
 
 	process.on("SIGTERM", () => shutdown("SIGTERM"));
@@ -30,8 +31,9 @@ async function bootstrap(): Promise<void> {
 process.on("unhandledRejection", (reason) =>
 	logger.error({ reason }, "Unhandled rejection"),
 );
+
 process.on("uncaughtException", (error) => {
-	logger.fatal({ error }, "Uncaught exception — exiting");
+	logger.fatal({ err: error }, "Uncaught exception — exiting");
 	process.exit(1);
 });
 
