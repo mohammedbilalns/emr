@@ -172,6 +172,9 @@ async function seed(): Promise<void> {
 
 		const appointmentTasks: Promise<unknown>[] = [];
 
+		// Reset existing appointments so seed runs produce a clean, predictable schedule
+		await Appointment.deleteMany({});
+
 		if (drChenDoc && alice && adminUser) {
 			appointmentTasks.push(
 				Appointment.findOneAndUpdate(
