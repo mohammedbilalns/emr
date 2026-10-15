@@ -7,6 +7,9 @@ import { errorHandler } from "./middlewares/error-handler.middleware";
 import { notFoundHandler } from "./middlewares/notfound.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
 import authRoutes from "./routes/auth.routes";
+import doctorRoutes from "./routes/v1/doctors.routes";
+import slotRoutes from "./routes/v1/slots.routes";
+import staffRoutes from "./routes/v1/staff.routes";
 
 // ---------------------------------------------------------------------------
 // Creates and configures the Express application
@@ -38,8 +41,11 @@ export function createApp() {
 		});
 	});
 
-	// Mount authentication routes
+	// Mount routes
 	app.use(`${API_PREFIX}/auth`, authRoutes);
+	app.use(`${API_PREFIX}/doctors`, doctorRoutes);
+	app.use(`${API_PREFIX}/slots`, slotRoutes);
+	app.use(`${API_PREFIX}/staff`, staffRoutes);
 
 	// 404 handler for unmatched routes
 	app.use(notFoundHandler);
