@@ -34,6 +34,10 @@ export const updateAppointmentSchema = z
 	});
 export type UpdateAppointmentBody = z.infer<typeof updateAppointmentSchema>;
 
+export const partialMobileSchema = z
+	.string()
+	.regex(/^\d{3,10}$/, "Mobile must be between 3 and 10 digits");
+
 export const appointmentListQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).default(1),
 	limit: z.coerce.number().int().min(1).max(100).default(10),
@@ -43,7 +47,7 @@ export const appointmentListQuerySchema = z.object({
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
 	doctorId: objectId.optional(),
 	patientId: objectId.optional(),
-	mobile: mobileSchema.optional(),
+	mobile: partialMobileSchema.optional(),
 	department: z.string().max(60).optional(),
 	status: z.enum(APPOINTMENT_STATUS).optional(),
 	dateFrom: dateString.optional(),
