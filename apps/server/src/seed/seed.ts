@@ -2,6 +2,7 @@ import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
 import { Appointment } from "../modules/appointments";
 import { User } from "../modules/auth";
+import { Department } from "../modules/departments";
 import { Doctor } from "../modules/doctors";
 import { Counter, Patient } from "../modules/patients";
 import { hashPassword } from "../utils/hash";
@@ -131,6 +132,20 @@ async function seed(): Promise<void> {
 					{ upsert: true, setDefaultsOnInsert: true },
 				);
 			}),
+		);
+
+		await Promise.all(
+			Array.from(new Set(doctors.map((d) => d.department))).map((deptName) =>
+				Department.findOneAndUpdate(
+					{ nameNormalized: deptName.trim().toLowerCase() },
+					{
+						name: deptName.trim(),
+						nameNormalized: deptName.trim().toLowerCase(),
+						isActive: true,
+					},
+					{ upsert: true, setDefaultsOnInsert: true },
+				),
+			),
 		);
 
 		await Promise.all([
