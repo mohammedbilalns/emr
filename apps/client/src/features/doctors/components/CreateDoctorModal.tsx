@@ -1,10 +1,19 @@
-import { type CreateDoctorBody, createDoctorSchema } from "@emr/shared";
+import {
+	type CreateDoctorBody,
+	createDoctorSchema,
+	formatFriendlyErrorMessage,
+} from "@emr/shared";
+import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useState } from "react";
-import { getErrorMessage } from "../../../shared/api/api-errors";
+import {
+	ApiClientError,
+	getErrorMessage,
+} from "../../../shared/api/api-errors";
 import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { Select } from "../../../shared/components/ui/Select";
+import { listDepartmentsApi } from "../api/doctors.api";
 
 export interface CreateDoctorModalProps {
 	isOpen: boolean;
@@ -24,19 +33,46 @@ export function CreateDoctorModal({
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [department, setDepartment] = useState("General Medicine");
+	const [department, setDepartment] = useState("");
 	const [slotDuration, setSlotDuration] = useState<number>(15);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+	const { data: departments = [], isLoading: isLoadingDepts } = useQuery({
+		queryKey: ["departments"],
+		queryFn: listDepartmentsApi,
+		staleTime: 60_000,
+	});
 
 	useEffect(() => {
 		if (isOpen) {
 			setErrorMessage(null);
+			setFieldErrors({});
+			if (
+				departments.length > 0 &&
+				!departments.some((d) => d.name === department)
+			) {
+				setDepartment(departments[0].name);
+			}
 		}
-	}, [isOpen]);
+	}, [isOpen, departments, department]);
+
+	useEffect(() => {
+		if (error) {
+			if (error instanceof ApiClientError && error.fieldErrors.length > 0) {
+				const errors: Record<string, string> = {};
+				for (const field of error.fieldErrors) {
+					errors[field.path] = field.message;
+				}
+				setFieldErrors(errors);
+			}
+		}
+	}, [error]);
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		setErrorMessage(null);
+		setFieldErrors({});
 
 		const candidate: CreateDoctorBody = {
 			name: name.trim(),
@@ -56,7 +92,20 @@ export function CreateDoctorModal({
 
 		const validation = createDoctorSchema.safeParse(candidate);
 		if (!validation.success) {
-			setErrorMessage(validation.error.issues[0].message);
+			const errors: Record<string, string> = {};
+			for (const issue of validation.error.issues) {
+				const field = issue.path[issue.path.length - 1];
+				if (typeof field === "string") {
+					errors[field] = formatFriendlyErrorMessage(
+						issue.message,
+						field === "name" ? "Physician name" : field,
+					);
+				}
+			}
+			setFieldErrors(errors);
+			setErrorMessage(
+				formatFriendlyErrorMessage(validation.error.issues[0].message),
+			);
 			return;
 		}
 
@@ -104,7 +153,13 @@ export function CreateDoctorModal({
 					label="Physician Full Name"
 					placeholder="e.g. Dr. Robert House"
 					value={name}
-					onChange={(e) => setName(e.target.value)}
+					error={fieldErrors.name}
+					onChange={(e) => {
+						setName(e.target.value);
+						if (fieldErrors.name) {
+							setFieldErrors((prev) => ({ ...prev, name: "" }));
+						}
+					}}
 				/>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -113,7 +168,13 @@ export function CreateDoctorModal({
 						type="email"
 						placeholder="dr.house@emr.local"
 						value={email}
-						onChange={(e) => setEmail(e.target.value)}
+						error={fieldErrors.email}
+						onChange={(e) => {
+							setEmail(e.target.value);
+							if (fieldErrors.email) {
+								setFieldErrors((prev) => ({ ...prev, email: "" }));
+							}
+						}}
 					/>
 
 					<Input
@@ -121,19 +182,47 @@ export function CreateDoctorModal({
 						type="password"
 						placeholder="••••••••••••"
 						value={password}
-						onChange={(e) => setPassword(e.target.value)}
+						error={fieldErrors.password}
+						onChange={(e) => {
+							setPassword(e.target.value);
+							if (fieldErrors.password) {
+								setFieldErrors((prev) => ({ ...prev, password: "" }));
+							}
+						}}
 					/>
 				</div>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<Input
+					<Select
+						id="doctor-department"
 						label="Clinical Department"
-						placeholder="e.g. Cardiology, Neurology"
 						value={department}
-						onChange={(e) => setDepartment(e.target.value)}
-					/>
+						error={fieldErrors.department}
+						disabled={isLoadingDepts}
+						onChange={(e) => {
+							setDepartment(e.target.value);
+							if (fieldErrors.department) {
+								setFieldErrors((prev) => ({ ...prev, department: "" }));
+							}
+						}}
+					>
+						{departments.length === 0 ? (
+							<option value="">
+								{isLoadingDepts
+									? "Loading departments..."
+									: "No departments available"}
+							</option>
+						) : (
+							departments.map((d) => (
+								<option key={d.id} value={d.name}>
+									{d.name}
+								</option>
+							))
+						)}
+					</Select>
 
 					<Select
+						id="doctor-slot-duration"
 						label="Appointment Length"
 						value={slotDuration}
 						onChange={(e) => setSlotDuration(Number(e.target.value))}

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { RealtimeIndicator } from "../ui/RealtimeIndicator";
 
 export interface HeaderProps {
 	onOpenMobileMenu?: () => void;
@@ -57,8 +56,6 @@ export function Header({ onOpenMobileMenu }: HeaderProps) {
 					<span className="text-slate-300">|</span>
 					<span>Outpatient Clinic</span>
 				</div>
-
-				<RealtimeIndicator />
 			</div>
 
 			<div className="flex items-center gap-2 sm:gap-3">

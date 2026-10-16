@@ -2,7 +2,7 @@ import type {
 	AuthUser,
 	CreateDoctorBody,
 	CreateStaffBody,
-	UpdateDoctorScheduleBody,
+	UpdateDoctorBody,
 } from "@emr/shared";
 import type { Request, Response } from "express";
 import { HttpStatus } from "../../config/constants";
@@ -37,6 +37,16 @@ export async function createReceptionist(
 	});
 }
 
+export async function listReceptionists(
+	_req: Request,
+	res: Response,
+): Promise<Response> {
+	return sendSuccess(res, {
+		data: await doctorService.listReceptionists(),
+		message: "Staff members retrieved",
+	});
+}
+
 export async function listDoctors(
 	_req: Request,
 	res: Response,
@@ -47,20 +57,18 @@ export async function listDoctors(
 	});
 }
 
-export async function updateSchedule(
+export async function updateDoctor(
 	req: Request,
 	res: Response,
 ): Promise<Response> {
 	const user = req.user as AuthUser;
 	const params = req.validated?.params as { id: string };
-	const body = req.validated?.body as UpdateDoctorScheduleBody;
-	const doctor = await doctorService.updateDoctorSchedule(
-		params.id,
-		body,
-		user,
-	);
+	const body = req.validated?.body as UpdateDoctorBody;
+	const doctor = await doctorService.updateDoctor(params.id, body, user);
 	return sendSuccess(res, {
 		data: doctor,
-		message: "Schedule updated successfully",
+		message: "Doctor updated successfully",
 	});
 }
+
+export const updateSchedule = updateDoctor;

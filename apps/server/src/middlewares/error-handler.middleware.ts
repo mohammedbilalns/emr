@@ -1,3 +1,4 @@
+import { formatFriendlyErrorMessage } from "@emr/shared";
 import type { NextFunction, Request, Response } from "express";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -46,12 +47,17 @@ export function errorHandler(
 	}
 	// 2. Zod safety net
 	if (err instanceof ZodError) {
+		const primaryMsg = err.issues[0]?.message ?? ErrorMessages.VALIDATION;
+		const field = err.issues[0]?.path.slice(-1)[0]?.toString();
 		res.status(HttpStatus.BAD_REQUEST).json({
 			success: false,
-			message: err.issues[0]?.message ?? ErrorMessages.VALIDATION,
+			message: formatFriendlyErrorMessage(primaryMsg, field),
 			errors: err.issues.map((i) => ({
 				path: i.path.join("."),
-				message: i.message,
+				message: formatFriendlyErrorMessage(
+					i.message,
+					i.path[i.path.length - 1]?.toString(),
+				),
 			})),
 		});
 		return;

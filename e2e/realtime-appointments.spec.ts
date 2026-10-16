@@ -39,13 +39,19 @@ test.describe("Real-Time Appointment Updates via Socket.IO", () => {
 				.locator("label", { hasText: "Department" })
 				.locator("..")
 				.locator("select");
+			await expect(
+				deptSelect1.locator("option", { hasText: "Cardiology" }),
+			).toBeAttached();
 			await deptSelect1.selectOption("Cardiology");
-			await page1.fill("input#scheduler-date", targetDate);
 
-			// Verify Realtime Live Indicator is active
-			await expect(page1.getByText("Live").first()).toBeVisible({
-				timeout: 10_000,
+			const doctorBanner1 = page1.locator("div.flex-wrap", {
+				hasText: "Slot Duration:",
 			});
+			await expect(doctorBanner1.getByText("Dr. Sarah Chen")).toBeVisible({
+				timeout: 5000,
+			});
+
+			await page1.fill("input#scheduler-date", targetDate);
 
 			await expect(
 				page1.getByText("Available to Book", { exact: false }),
@@ -57,12 +63,19 @@ test.describe("Real-Time Appointment Updates via Socket.IO", () => {
 				.locator("label", { hasText: "Department" })
 				.locator("..")
 				.locator("select");
+			await expect(
+				deptSelect2.locator("option", { hasText: "Cardiology" }),
+			).toBeAttached();
 			await deptSelect2.selectOption("Cardiology");
-			await page2.fill("input#scheduler-date", targetDate);
 
-			await expect(page2.getByText("Live").first()).toBeVisible({
-				timeout: 10_000,
+			const doctorBanner2 = page2.locator("div.flex-wrap", {
+				hasText: "Slot Duration:",
 			});
+			await expect(doctorBanner2.getByText("Dr. Sarah Chen")).toBeVisible({
+				timeout: 5000,
+			});
+
+			await page2.fill("input#scheduler-date", targetDate);
 
 			// Page 2 locates the first open slot
 			const openSlotPage2 = page2
@@ -138,7 +151,18 @@ test.describe("Real-Time Appointment Updates via Socket.IO", () => {
 				.locator("label", { hasText: "Department" })
 				.locator("..")
 				.locator("select");
+			await expect(
+				deptSelect1.locator("option", { hasText: "Cardiology" }),
+			).toBeAttached();
 			await deptSelect1.selectOption("Cardiology");
+
+			const doctorBanner1 = page1.locator("div.flex-wrap", {
+				hasText: "Slot Duration:",
+			});
+			await expect(doctorBanner1.getByText("Dr. Sarah Chen")).toBeVisible({
+				timeout: 5000,
+			});
+
 			await page1.fill("input#scheduler-date", targetDate);
 			await expect(
 				page1.getByText("Available to Book", { exact: false }),
@@ -150,7 +174,18 @@ test.describe("Real-Time Appointment Updates via Socket.IO", () => {
 				.locator("label", { hasText: "Department" })
 				.locator("..")
 				.locator("select");
+			await expect(
+				deptSelect2.locator("option", { hasText: "Cardiology" }),
+			).toBeAttached();
 			await deptSelect2.selectOption("Cardiology");
+
+			const doctorBanner2 = page2.locator("div.flex-wrap", {
+				hasText: "Slot Duration:",
+			});
+			await expect(doctorBanner2.getByText("Dr. Sarah Chen")).toBeVisible({
+				timeout: 5000,
+			});
+
 			await page2.fill("input#scheduler-date", targetDate);
 
 			const openSlot = page2

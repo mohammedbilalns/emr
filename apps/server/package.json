@@ -9,6 +9,8 @@
 		"start": "node dist/server.js",
 		"typecheck": "tsc --noEmit",
 		"seed": "tsx src/seed/seed.ts",
+		"add:department": "tsx src/scripts/add-department.ts",
+		"migrate:departments": "tsx src/scripts/migrate-departments.ts",
 		"test": "vitest run"
 	},
 	"keywords": [],

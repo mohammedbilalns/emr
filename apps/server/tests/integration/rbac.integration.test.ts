@@ -82,6 +82,40 @@ describe("RBAC & Route Security Integration Tests", () => {
 		});
 	});
 
+	describe("Staff Directory (GET /api/v1/staff/receptionists)", () => {
+		it("denies Receptionist from viewing staff directory with 403", async () => {
+			const authHeader = await getAuthHeader("RECEPTIONIST");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(403);
+		});
+
+		it("denies Doctor from viewing staff directory with 403", async () => {
+			const authHeader = await getAuthHeader("DOCTOR");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(403);
+		});
+
+		it("allows Super Admin to view staff directory with 200", async () => {
+			const authHeader = await getAuthHeader("SUPER_ADMIN");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(200);
+			expect(res.body.success).toBe(true);
+			expect(Array.isArray(res.body.data)).toBe(true);
+		});
+	});
+
 	describe("Clinical Lifecycle Boundaries", () => {
 		const dummyId = "507f1f77bcf86cd799439011";
 
@@ -117,6 +151,27 @@ describe("RBAC & Route Security Integration Tests", () => {
 
 			expect(res.status).toBe(403);
 			expect(res.body.success).toBe(false);
+		});
+	});
+
+	describe("Department Listing (GET /api/v1/departments)", () => {
+		it("denies access to unauthenticated requests with 401", async () => {
+			const res = await request(app).get("/api/v1/departments");
+			expect(res.status).toBe(401);
+		});
+
+		it("allows authenticated users to fetch departments", async () => {
+			const authHeader = await getAuthHeader("SUPER_ADMIN");
+			const res = await request(app)
+				.get("/api/v1/departments")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(200);
+			expect(res.body.success).toBe(true);
+			expect(Array.isArray(res.body.data)).toBe(true);
+			expect(res.body.data.length).toBeGreaterThan(0);
+			expect(res.body.data[0]).toHaveProperty("name");
+			expect(res.body.data[0]).toHaveProperty("id");
 		});
 	});
 });

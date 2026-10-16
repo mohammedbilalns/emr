@@ -9,6 +9,7 @@ import { notFoundHandler } from "./middlewares/notfound.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
 import { appointmentRoutes } from "./modules/appointments";
 import { authRoutes } from "./modules/auth";
+import { departmentRoutes } from "./modules/departments";
 import { doctorRoutes, staffRoutes } from "./modules/doctors";
 import { healthHandler } from "./modules/health";
 import { patientRoutes } from "./modules/patients";
@@ -32,6 +33,7 @@ export function createApp(): express.Application {
 	app.get(`${API_PREFIX}/health`, healthHandler);
 
 	app.use(`${API_PREFIX}/auth`, authRoutes);
+	app.use(`${API_PREFIX}/departments`, departmentRoutes);
 	app.use(`${API_PREFIX}/doctors`, doctorRoutes);
 	app.use(`${API_PREFIX}/slots`, slotRoutes);
 	app.use(`${API_PREFIX}/staff`, staffRoutes);

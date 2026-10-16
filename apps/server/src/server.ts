@@ -14,7 +14,7 @@ async function bootstrap(): Promise<void> {
 
 	httpServer.listen(env.PORT, () => {
 		logger.info(`API listening on http://localhost:${env.PORT}${API_PREFIX}`);
-		logger.info("Real-time WebSocket server initialized on same port");
+		logger.info(`WebSocket server Running on ${env.PORT}`);
 	});
 
 	const shutdown = (signal: string) => {

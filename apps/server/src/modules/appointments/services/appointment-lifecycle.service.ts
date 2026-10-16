@@ -39,8 +39,7 @@ export async function updateAppointment(
 	}
 
 	const updatePayload: Record<string, unknown> = { updatedBy: actor.id };
-	// When actor is a DOCTOR, strip purpose and allow only consultation notes
-	if (actor.role !== "DOCTOR" && body.purpose !== undefined) {
+	if (body.purpose !== undefined) {
 		updatePayload.purpose = body.purpose;
 	}
 	if (body.notes !== undefined) {

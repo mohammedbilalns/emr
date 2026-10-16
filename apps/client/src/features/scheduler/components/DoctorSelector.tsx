@@ -30,13 +30,9 @@ export function DoctorSelector({
 
 	const handleDepartmentSelect = (dept: string) => {
 		onDepartmentChange(dept);
-		// If current doctor not in new department, auto-select first available doctor
 		if (dept) {
 			const matching = doctors.filter((d) => d.department === dept);
-			if (
-				matching.length > 0 &&
-				!matching.some((d) => d.id === selectedDoctorId)
-			) {
+			if (matching.length > 0) {
 				onDoctorChange(matching[0].id);
 			}
 		}

@@ -9,7 +9,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../../shared/components/ui/Card";
-import { RealtimeIndicator } from "../../../shared/components/ui/RealtimeIndicator";
 import { useSchedulerRoom } from "../../../shared/socket/use-realtime";
 import { listDoctorsApi } from "../api/scheduler.api";
 import { BookingModal } from "../components/BookingModal";
@@ -43,12 +42,20 @@ export function SchedulerPage() {
 		staleTime: 60_000,
 	});
 
-	// Auto-select first doctor once loaded
+	// Auto-select first doctor once loaded or whenever department filter changes
 	useEffect(() => {
-		if (doctors.length > 0 && !selectedDoctorId) {
-			setSelectedDoctorId(doctors[0].id);
+		if (doctors.length === 0) return;
+
+		const availableInDept = selectedDepartment
+			? doctors.filter((d) => d.department === selectedDepartment)
+			: doctors;
+
+		const currentValid = availableInDept.some((d) => d.id === selectedDoctorId);
+
+		if (!currentValid && availableInDept.length > 0) {
+			setSelectedDoctorId(availableInDept[0].id);
 		}
-	}, [doctors, selectedDoctorId]);
+	}, [doctors, selectedDepartment, selectedDoctorId]);
 
 	// Fetch dynamic slots for the selected doctor and date
 	const {
@@ -84,7 +91,6 @@ export function SchedulerPage() {
 				</div>
 
 				<div className="flex items-center gap-2">
-					<RealtimeIndicator />
 					<Button
 						variant="outline"
 						size="sm"

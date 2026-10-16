@@ -8,6 +8,8 @@ export interface IUser {
 	passwordHash: string;
 	role: Role;
 	isActive: boolean;
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export interface IUserMethods {

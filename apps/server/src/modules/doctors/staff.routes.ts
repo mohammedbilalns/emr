@@ -3,7 +3,7 @@ import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware";
 import { requireRoles } from "../../middlewares/rbac.middleware";
 import { validate } from "../../middlewares/validate.middleware";
-import { createReceptionist } from "./doctor.controller";
+import { createReceptionist, listReceptionists } from "./doctor.controller";
 
 const router = Router();
 
@@ -15,5 +15,15 @@ router.post(
 	validate({ body: createStaffSchema }),
 	createReceptionist,
 );
+
+// List all receptionist staff accounts
+router.get(
+	"/receptionists",
+	requireAuth,
+	requireRoles("SUPER_ADMIN"),
+	listReceptionists,
+);
+
+router.get("/", requireAuth, requireRoles("SUPER_ADMIN"), listReceptionists);
 
 export default router;

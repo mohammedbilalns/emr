@@ -135,6 +135,43 @@ test.describe("Clinical Appointments Lifecycle and State Transitions", () => {
 		const cellText = await patientCell.innerText();
 		const patientName = cellText.split("\n")[0].split("·")[0].trim();
 
+		// Doctor updates consultation purpose and notes
+		const editBtn = arrivedRow.getByRole("button", {
+			name: "Edit notes and purpose",
+		});
+		await editBtn.click();
+
+		const editModal = page.locator('div[role="dialog"]');
+		await expect(editModal).toBeVisible();
+		await expect(
+			editModal.getByRole("heading", { name: "Update Consultation Details" }),
+		).toBeVisible();
+
+		await modalField(page, "#edit-purpose").fill(
+			"Specialist evaluation - updated purpose",
+		);
+		await modalField(page, "#edit-notes").fill(
+			"Doctor consultation notes updated successfully.",
+		);
+		await editModal.getByRole("button", { name: "Save Changes" }).click();
+		await expect(editModal).not.toBeVisible({ timeout: 5000 });
+
+		// Verify purpose and notes updated in details modal
+		const detailsBtn = arrivedRow.getByRole("button", {
+			name: "View appointment details",
+		});
+		await detailsBtn.click();
+		const detailsModal = page.locator('div[role="dialog"]');
+		await expect(detailsModal).toBeVisible();
+		await expect(
+			detailsModal.getByText("Specialist evaluation - updated purpose"),
+		).toBeVisible();
+		await expect(
+			detailsModal.getByText("Doctor consultation notes updated successfully."),
+		).toBeVisible();
+		await detailsModal.getByRole("button", { name: "Close Record" }).click();
+		await expect(detailsModal).not.toBeVisible();
+
 		// Complete the consultation
 		const completeBtn = arrivedRow.getByRole("button", { name: "Complete" });
 		await expect(completeBtn).toBeVisible();

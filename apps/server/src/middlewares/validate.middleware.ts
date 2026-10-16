@@ -1,3 +1,4 @@
+import { formatFriendlyErrorMessage } from "@emr/shared";
 import type { NextFunction, Request, Response } from "express";
 import { ZodError, type ZodType } from "zod";
 import { ValidationError } from "../errors/base.error";
@@ -24,12 +25,17 @@ export const validate =
 			next();
 		} catch (error) {
 			if (error instanceof ZodError) {
+				const primaryMsg = error.issues[0]?.message ?? "Validation failed";
+				const field = error.issues[0]?.path.slice(-1)[0]?.toString();
 				next(
 					new ValidationError(
-						error.issues[0]?.message ?? "Validation failed",
+						formatFriendlyErrorMessage(primaryMsg, field),
 						error.issues.map((i) => ({
 							path: i.path.join("."),
-							message: i.message,
+							message: formatFriendlyErrorMessage(
+								i.message,
+								i.path[i.path.length - 1]?.toString(),
+							),
 						})),
 					),
 				);

@@ -2,6 +2,7 @@ import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
 import { Appointment } from "../modules/appointments";
 import { User } from "../modules/auth";
+import { Department, migrateDoctorDepartments } from "../modules/departments";
 import { Doctor } from "../modules/doctors";
 import { Counter, Patient } from "../modules/patients";
 import { hashPassword } from "../utils/hash";
@@ -133,6 +134,22 @@ async function seed(): Promise<void> {
 			}),
 		);
 
+		await Promise.all(
+			Array.from(new Set(doctors.map((d) => d.department))).map((deptName) =>
+				Department.findOneAndUpdate(
+					{ nameNormalized: deptName.trim().toLowerCase() },
+					{
+						name: deptName.trim(),
+						nameNormalized: deptName.trim().toLowerCase(),
+						isActive: true,
+					},
+					{ upsert: true, setDefaultsOnInsert: true },
+				),
+			),
+		);
+
+		await migrateDoctorDepartments();
+
 		await Promise.all([
 			...patients.map((p) =>
 				Patient.findOneAndUpdate(
@@ -171,6 +188,9 @@ async function seed(): Promise<void> {
 		const apptDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 		const appointmentTasks: Promise<unknown>[] = [];
+
+		// Reset existing appointments so seed runs produce a clean, predictable schedule
+		await Appointment.deleteMany({});
 
 		if (drChenDoc && alice && adminUser) {
 			appointmentTasks.push(
