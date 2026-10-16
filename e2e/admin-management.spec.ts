@@ -145,7 +145,9 @@ test.describe("Super Admin Clinical and Staff Management", () => {
 		await loginAs(page, uniqueStaffEmail, "Recept@12345");
 
 		// Verify logged-in view shows the new receptionist name and role
-		await expect(page.getByText(uniqueStaffName, { exact: true })).toBeVisible();
+		await expect(
+			page.getByText(uniqueStaffName, { exact: true }),
+		).toBeVisible();
 		await expect(page.getByText("RECEPTIONIST", { exact: true })).toBeVisible();
 	});
 });

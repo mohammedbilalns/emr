@@ -31,6 +31,38 @@ async function nextPatientCode(): Promise<string> {
 	return `P${String(counter.seq).padStart(6, "0")}`;
 }
 
+function hasTopology(
+	val: unknown,
+): val is { topology: { description: { type: string } } } {
+	if (!val || typeof val !== "object") return false;
+	if (
+		!("topology" in val) ||
+		!val.topology ||
+		typeof val.topology !== "object"
+	) {
+		return false;
+	}
+	const top = val.topology;
+	if (
+		!("description" in top) ||
+		!top.description ||
+		typeof top.description !== "object"
+	) {
+		return false;
+	}
+	const desc = top.description;
+	return "type" in desc && typeof desc.type === "string";
+}
+
+function supportsTransactions(): boolean {
+	const client: unknown = mongoose.connection.getClient();
+	if (hasTopology(client)) {
+		const type = client.topology.description.type;
+		return type === "ReplicaSetWithPrimary" || type === "Sharded";
+	}
+	return false;
+}
+
 /**
  * Books an appointment with slot validation, patient creation, and double-booking guards.
  */
@@ -51,26 +83,29 @@ export async function bookAppointment(
 		);
 	}
 
-	// Attempt a transaction for atomic patient creation and appointment booking
-	const session = await mongoose.startSession();
+	// Attempt a transaction for atomic patient creation and appointment booking if supported by deployment
+	const canUseTx = supportsTransactions();
+	const session = canUseTx ? await mongoose.startSession() : null;
 	let inTx = false;
-	try {
+	if (session) {
 		try {
 			session.startTransaction();
 			inTx = true;
 		} catch {
 			// Standalone MongoDB instances do not support transactions; proceed non-transactionally
 		}
+	}
 
-		let patientId: mongoose.Types.ObjectId;
-		let patientCode: string;
-		let patientName: string;
-		let patientMobile: string;
+	let patientId: mongoose.Types.ObjectId | undefined;
+	let patientCode: string;
+	let patientName: string;
+	let patientMobile: string;
 
+	try {
 		if (body.patient.type === "EXISTING") {
-			const existingPatient = await Patient.findById(
-				body.patient.patientId,
-			).session(session);
+			const query = Patient.findById(body.patient.patientId);
+			if (session) query.session(session);
+			const existingPatient = await query;
 			if (!existingPatient) throw new NotFoundError("Patient not found");
 			patientId = existingPatient._id;
 			patientCode = existingPatient.patientCode;
@@ -87,7 +122,11 @@ export async function bookAppointment(
 					dateOfBirth: body.patient.dateOfBirth,
 				}),
 			});
-			await newPatient.save({ session });
+			if (session) {
+				await newPatient.save({ session });
+			} else {
+				await newPatient.save();
+			}
 			patientId = newPatient._id;
 			patientCode = newPatient.patientCode;
 			patientName = newPatient.name;
@@ -114,10 +153,10 @@ export async function bookAppointment(
 					createdBy: actor.id,
 				},
 			],
-			{ session },
+			session ? { session } : undefined,
 		);
 
-		if (inTx) await session.commitTransaction();
+		if (inTx && session) await session.commitTransaction();
 
 		await audit({
 			userId: actor.id,
@@ -136,7 +175,12 @@ export async function bookAppointment(
 		});
 		return dto;
 	} catch (error) {
-		if (inTx) await session.abortTransaction();
+		if (inTx && session) {
+			await session.abortTransaction().catch(() => null);
+		} else if (body.patient.type === "NEW" && patientId) {
+			// Compensating cleanup for newly created patient if appointment booking fails without transactions
+			await Patient.deleteOne({ _id: patientId }).catch(() => null);
+		}
 		if (isDuplicateKey(error, "startTime")) {
 			throw new SlotConflictError({
 				date: body.date,
@@ -165,6 +209,8 @@ export async function bookAppointment(
 		}
 		throw error;
 	} finally {
-		session.endSession();
+		if (session) {
+			await session.endSession();
+		}
 	}
 }
