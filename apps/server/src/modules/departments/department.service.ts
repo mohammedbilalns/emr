@@ -1,6 +1,10 @@
 import { ConflictError, ValidationError } from "../../errors/base.error";
 import { Doctor } from "../doctors/doctor.model";
-import { Department, type IDepartment } from "./department.model";
+import {
+	Department,
+	type DepartmentDocument,
+	type IDepartment,
+} from "./department.model";
 
 function escapeRegex(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -54,6 +58,44 @@ export async function createDepartment(rawName: string): Promise<IDepartment> {
 /**
  * Lists all active clinical departments sorted alphabetically by name.
  */
-export async function listDepartments(): Promise<IDepartment[]> {
+export async function listDepartments(): Promise<DepartmentDocument[]> {
 	return Department.find({ isActive: true }).sort({ name: 1 });
+}
+
+/**
+ * Migrates existing Doctor documents so that their departments exist in the Department collection,
+ * and normalizes doctor.department to match the canonical department name.
+ */
+export async function migrateDoctorDepartments(): Promise<{
+	created: string[];
+	updatedDoctors: number;
+}> {
+	const doctors = await Doctor.find({});
+	const created: string[] = [];
+	let updatedDoctors = 0;
+
+	for (const doctor of doctors) {
+		const rawDept = doctor.department?.trim();
+		if (!rawDept) continue;
+
+		const nameNormalized = rawDept.toLowerCase();
+		let dept = await Department.findOne({ nameNormalized });
+
+		if (!dept) {
+			dept = await Department.create({
+				name: rawDept,
+				nameNormalized,
+				isActive: true,
+			});
+			created.push(dept.name);
+		}
+
+		if (doctor.department !== dept.name) {
+			doctor.department = dept.name;
+			await doctor.save();
+			updatedDoctors++;
+		}
+	}
+
+	return { created, updatedDoctors };
 }

@@ -3,6 +3,7 @@ import {
 	createDoctorSchema,
 	formatFriendlyErrorMessage,
 } from "@emr/shared";
+import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useState } from "react";
 import {
 	ApiClientError,
@@ -12,6 +13,7 @@ import { Button } from "../../../shared/components/ui/Button";
 import { Input } from "../../../shared/components/ui/Input";
 import { Modal } from "../../../shared/components/ui/Modal";
 import { Select } from "../../../shared/components/ui/Select";
+import { listDepartmentsApi } from "../api/doctors.api";
 
 export interface CreateDoctorModalProps {
 	isOpen: boolean;
@@ -31,17 +33,29 @@ export function CreateDoctorModal({
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [department, setDepartment] = useState("General Medicine");
+	const [department, setDepartment] = useState("");
 	const [slotDuration, setSlotDuration] = useState<number>(15);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+	const { data: departments = [], isLoading: isLoadingDepts } = useQuery({
+		queryKey: ["departments"],
+		queryFn: listDepartmentsApi,
+		staleTime: 60_000,
+	});
 
 	useEffect(() => {
 		if (isOpen) {
 			setErrorMessage(null);
 			setFieldErrors({});
+			if (
+				departments.length > 0 &&
+				!departments.some((d) => d.name === department)
+			) {
+				setDepartment(departments[0].name);
+			}
 		}
-	}, [isOpen]);
+	}, [isOpen, departments, department]);
 
 	useEffect(() => {
 		if (error) {
@@ -179,20 +193,36 @@ export function CreateDoctorModal({
 				</div>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<Input
+					<Select
+						id="doctor-department"
 						label="Clinical Department"
-						placeholder="e.g. Cardiology, Neurology"
 						value={department}
 						error={fieldErrors.department}
+						disabled={isLoadingDepts}
 						onChange={(e) => {
 							setDepartment(e.target.value);
 							if (fieldErrors.department) {
 								setFieldErrors((prev) => ({ ...prev, department: "" }));
 							}
 						}}
-					/>
+					>
+						{departments.length === 0 ? (
+							<option value="">
+								{isLoadingDepts
+									? "Loading departments..."
+									: "No departments available"}
+							</option>
+						) : (
+							departments.map((d) => (
+								<option key={d.id} value={d.name}>
+									{d.name}
+								</option>
+							))
+						)}
+					</Select>
 
 					<Select
+						id="doctor-slot-duration"
 						label="Appointment Length"
 						value={slotDuration}
 						onChange={(e) => setSlotDuration(Number(e.target.value))}

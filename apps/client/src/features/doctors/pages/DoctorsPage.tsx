@@ -1,6 +1,7 @@
 import type {
 	CreateDoctorBody,
 	DoctorDto,
+	UpdateDoctorBody,
 	UpdateDoctorScheduleBody,
 } from "@emr/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,10 +14,12 @@ import { useToast } from "../../../shared/hooks/use-toast";
 import {
 	createDoctorApi,
 	listDoctorsApi,
+	updateDoctorApi,
 	updateDoctorScheduleApi,
 } from "../api/doctors.api";
 import { CreateDoctorModal } from "../components/CreateDoctorModal";
 import { DoctorCard } from "../components/DoctorCard";
+import { EditDoctorModal } from "../components/EditDoctorModal";
 import { ScheduleConfigModal } from "../components/ScheduleConfigModal";
 
 export function DoctorsPage() {
@@ -25,6 +28,9 @@ export function DoctorsPage() {
 
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [scheduleTarget, setScheduleTarget] = useState<DoctorDto | null>(null);
+	const [editDoctorTarget, setEditDoctorTarget] = useState<DoctorDto | null>(
+		null,
+	);
 
 	const {
 		data: doctors = [],
@@ -49,6 +55,24 @@ export function DoctorsPage() {
 			toast.error(
 				getErrorMessage(error, "Failed to create doctor"),
 				"Registration Error",
+			);
+		},
+	});
+
+	const updateDoctorMutation = useMutation({
+		mutationFn: ({ id, data }: { id: string; data: UpdateDoctorBody }) =>
+			updateDoctorApi(id, data),
+		onSuccess: (updated) => {
+			toast.success(
+				`${updated.name} profile updated successfully`,
+				"Physician Updated",
+			);
+			void queryClient.invalidateQueries({ queryKey: ["doctors"] });
+		},
+		onError: (error) => {
+			toast.error(
+				getErrorMessage(error, "Failed to update doctor"),
+				"Update Error",
 			);
 		},
 	});
@@ -144,6 +168,7 @@ export function DoctorsPage() {
 						<DoctorCard
 							key={doctor.id}
 							doctor={doctor}
+							onEditDoctor={setEditDoctorTarget}
 							onEditSchedule={setScheduleTarget}
 						/>
 					))}
@@ -167,6 +192,29 @@ export function DoctorsPage() {
 				}}
 				isLoading={createMutation.isPending}
 				error={createMutation.error}
+			/>
+
+			{/* Edit Doctor Profile Dialog */}
+			<EditDoctorModal
+				doctor={editDoctorTarget}
+				isOpen={Boolean(editDoctorTarget)}
+				onClose={() => {
+					setEditDoctorTarget(null);
+					updateDoctorMutation.reset();
+				}}
+				onUpdate={(id, data) => {
+					updateDoctorMutation.mutate(
+						{ id, data },
+						{
+							onSuccess: () => {
+								setEditDoctorTarget(null);
+								updateDoctorMutation.reset();
+							},
+						},
+					);
+				}}
+				isLoading={updateDoctorMutation.isPending}
+				error={updateDoctorMutation.error}
 			/>
 
 			{/* Edit Schedule Dialog */}

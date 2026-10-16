@@ -1,14 +1,10 @@
-import {
-	createDoctorSchema,
-	objectId,
-	updateDoctorScheduleSchema,
-} from "@emr/shared";
+import { createDoctorSchema, objectId, updateDoctorSchema } from "@emr/shared";
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../../middlewares/auth.middleware";
 import { requireRoles } from "../../middlewares/rbac.middleware";
 import { validate } from "../../middlewares/validate.middleware";
-import { createDoctor, listDoctors, updateSchedule } from "./doctor.controller";
+import { createDoctor, listDoctors, updateDoctor } from "./doctor.controller";
 
 const router = Router();
 
@@ -24,16 +20,16 @@ router.post(
 // List all active doctors
 router.get("/", requireAuth, listDoctors);
 
-// Update weekly consultation schedule for a doctor
+// Update doctor profile (name, department, schedule, isActive)
 router.put(
 	"/:id",
 	requireAuth,
 	requireRoles("SUPER_ADMIN"),
 	validate({
 		params: z.object({ id: objectId }),
-		body: updateDoctorScheduleSchema,
+		body: updateDoctorSchema,
 	}),
-	updateSchedule,
+	updateDoctor,
 );
 
 export default router;

@@ -2,7 +2,7 @@ import { connectDatabase, disconnectDatabase } from "../config/db";
 import logger from "../logging/logger";
 import { Appointment } from "../modules/appointments";
 import { User } from "../modules/auth";
-import { Department } from "../modules/departments";
+import { Department, migrateDoctorDepartments } from "../modules/departments";
 import { Doctor } from "../modules/doctors";
 import { Counter, Patient } from "../modules/patients";
 import { hashPassword } from "../utils/hash";
@@ -147,6 +147,8 @@ async function seed(): Promise<void> {
 				),
 			),
 		);
+
+		await migrateDoctorDepartments();
 
 		await Promise.all([
 			...patients.map((p) =>

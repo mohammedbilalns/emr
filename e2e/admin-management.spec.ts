@@ -36,12 +36,14 @@ test.describe("Super Admin Clinical and Staff Management", () => {
 		await createModal
 			.locator('input[placeholder="••••••••••••"]')
 			.fill("Doctor@12345");
+
+		// Select clinical department from dropdown
 		await createModal
-			.locator('input[placeholder="e.g. Cardiology, Neurology"]')
-			.fill("Pediatrics");
+			.locator("select#doctor-department")
+			.selectOption("Pediatrics");
 
 		// Select 20 minutes consultation duration
-		await createModal.locator("select").selectOption("20");
+		await createModal.locator("select#doctor-slot-duration").selectOption("20");
 
 		// Submit creation
 		await createModal.getByRole("button", { name: "Create Physician" }).click();
@@ -80,6 +82,32 @@ test.describe("Super Admin Clinical and Staff Management", () => {
 		await expect(newDocCard.getByText("30 min consultations")).toBeVisible({
 			timeout: 5000,
 		});
+
+		// Edit Doctor details (name and department)
+		await newDocCard.getByRole("button", { name: "Edit Doctor" }).click();
+		const editModal = page.locator('div[role="dialog"]');
+		await expect(editModal).toBeVisible();
+		await expect(
+			editModal.getByRole("heading", {
+				name: new RegExp(`Edit Physician: ${doctorName}`),
+			}),
+		).toBeVisible();
+
+		const updatedDoctorName = `${doctorName} MD`;
+		await editModal.locator("input#edit-doctor-name").fill(updatedDoctorName);
+		await editModal
+			.locator("select#edit-doctor-department")
+			.selectOption("Dermatology");
+
+		await editModal.getByRole("button", { name: "Save Changes" }).click();
+		await expect(editModal).not.toBeVisible({ timeout: 10_000 });
+
+		// Verify card shows updated name and department
+		const updatedCard = page
+			.getByTestId("doctor-card")
+			.filter({ hasText: updatedDoctorName });
+		await expect(updatedCard).toBeVisible({ timeout: 5000 });
+		await expect(updatedCard.getByText("Dermatology")).toBeVisible();
 	});
 
 	test("onboards a new front-desk receptionist staff member and verifies directory listing and login", async ({

@@ -88,6 +88,26 @@ export type UpdateDoctorScheduleBody = z.infer<
 	typeof updateDoctorScheduleSchema
 >;
 
+export const updateDoctorSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(1, "Physician name is required")
+		.min(2, "Physician name must be at least 2 characters")
+		.max(80, "Physician name cannot exceed 80 characters")
+		.optional(),
+	department: z
+		.string()
+		.trim()
+		.min(1, "Department is required")
+		.min(2, "Department name must be at least 2 characters")
+		.max(60, "Department name cannot exceed 60 characters")
+		.optional(),
+	schedule: scheduleSchema.optional(),
+	isActive: z.boolean().optional(),
+});
+export type UpdateDoctorBody = z.infer<typeof updateDoctorSchema>;
+
 export const createStaffSchema = z.object({
 	name: z
 		.string({ error: "Staff name is required" })

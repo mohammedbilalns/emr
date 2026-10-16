@@ -1,5 +1,12 @@
 import type { DoctorDto } from "@emr/shared";
-import { Calendar, Clock, Coffee, Edit3, Stethoscope } from "lucide-react";
+import {
+	Calendar,
+	Clock,
+	Coffee,
+	Edit3,
+	Pencil,
+	Stethoscope,
+} from "lucide-react";
 import { Badge } from "../../../shared/components/ui/Badge";
 import { Button } from "../../../shared/components/ui/Button";
 import {
@@ -12,12 +19,17 @@ import {
 
 export interface DoctorCardProps {
 	doctor: DoctorDto;
+	onEditDoctor?: (doctor: DoctorDto) => void;
 	onEditSchedule: (doctor: DoctorDto) => void;
 }
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function DoctorCard({ doctor, onEditSchedule }: DoctorCardProps) {
+export function DoctorCard({
+	doctor,
+	onEditDoctor,
+	onEditSchedule,
+}: DoctorCardProps) {
 	const workingDaysFormatted = doctor.schedule.workingDays
 		.map((dayIdx) => DAY_NAMES[dayIdx])
 		.join(", ");
@@ -105,11 +117,26 @@ export function DoctorCard({ doctor, onEditSchedule }: DoctorCardProps) {
 				</CardContent>
 			</div>
 
-			<CardFooter className="pt-3">
+			<CardFooter className="pt-3 flex items-center gap-2">
+				{onEditDoctor && (
+					<Button
+						variant="outline"
+						size="sm"
+						className="flex-1 text-xs font-semibold"
+						onClick={() => onEditDoctor(doctor)}
+						leftIcon={<Pencil className="h-3.5 w-3.5 text-slate-500" />}
+					>
+						Edit Doctor
+					</Button>
+				)}
 				<Button
 					variant="outline"
 					size="sm"
-					className="w-full text-xs font-semibold"
+					className={
+						onEditDoctor
+							? "flex-1 text-xs font-semibold"
+							: "w-full text-xs font-semibold"
+					}
 					onClick={() => onEditSchedule(doctor)}
 					leftIcon={<Edit3 className="h-3.5 w-3.5 text-slate-500" />}
 				>
