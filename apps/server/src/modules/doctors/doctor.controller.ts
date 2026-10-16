@@ -37,6 +37,16 @@ export async function createReceptionist(
 	});
 }
 
+export async function listReceptionists(
+	_req: Request,
+	res: Response,
+): Promise<Response> {
+	return sendSuccess(res, {
+		data: await doctorService.listReceptionists(),
+		message: "Staff members retrieved",
+	});
+}
+
 export async function listDoctors(
 	_req: Request,
 	res: Response,

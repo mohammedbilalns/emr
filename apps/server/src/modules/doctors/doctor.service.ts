@@ -3,6 +3,7 @@ import type {
 	CreateDoctorBody,
 	CreateStaffBody,
 	DoctorDto,
+	StaffDto,
 	UpdateDoctorScheduleBody,
 } from "@emr/shared";
 import { AUDIT_ACTIONS } from "../../config/constants";
@@ -79,6 +80,23 @@ export async function createReceptionist(
 		entityId: user.id,
 	});
 	return { id: user.id, name: user.name, email: user.email, role: user.role };
+}
+
+/**
+ * Lists all receptionist staff accounts ordered by creation date.
+ */
+export async function listReceptionists(): Promise<StaffDto[]> {
+	const staff = await User.find({ role: "RECEPTIONIST" }).sort({
+		createdAt: -1,
+	});
+	return staff.map((u) => ({
+		id: u.id,
+		name: u.name,
+		email: u.email,
+		role: u.role,
+		isActive: u.isActive,
+		createdAt: u.createdAt ? u.createdAt.toISOString() : undefined,
+	}));
 }
 
 /**

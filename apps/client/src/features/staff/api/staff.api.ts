@@ -1,5 +1,12 @@
-import type { ApiSuccess, CreateStaffBody } from "@emr/shared";
+import type { ApiSuccess, CreateStaffBody, StaffDto } from "@emr/shared";
 import { apiClient } from "../../../shared/api/axios-client";
+
+export async function listStaffApi(): Promise<StaffDto[]> {
+	const response = await apiClient.get<ApiSuccess<StaffDto[]>>(
+		"/staff/receptionists",
+	);
+	return response.data.data;
+}
 
 export async function createReceptionistApi(
 	data: CreateStaffBody,

@@ -82,6 +82,40 @@ describe("RBAC & Route Security Integration Tests", () => {
 		});
 	});
 
+	describe("Staff Directory (GET /api/v1/staff/receptionists)", () => {
+		it("denies Receptionist from viewing staff directory with 403", async () => {
+			const authHeader = await getAuthHeader("RECEPTIONIST");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(403);
+		});
+
+		it("denies Doctor from viewing staff directory with 403", async () => {
+			const authHeader = await getAuthHeader("DOCTOR");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(403);
+		});
+
+		it("allows Super Admin to view staff directory with 200", async () => {
+			const authHeader = await getAuthHeader("SUPER_ADMIN");
+
+			const res = await request(app)
+				.get("/api/v1/staff/receptionists")
+				.set("Authorization", authHeader.Authorization);
+
+			expect(res.status).toBe(200);
+			expect(res.body.success).toBe(true);
+			expect(Array.isArray(res.body.data)).toBe(true);
+		});
+	});
+
 	describe("Clinical Lifecycle Boundaries", () => {
 		const dummyId = "507f1f77bcf86cd799439011";
 
