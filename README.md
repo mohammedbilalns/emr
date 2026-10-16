@@ -30,7 +30,6 @@
 - [15. Assumptions Made](#15-assumptions-made)
 - [16. Known Limitations](#16-known-limitations)
 - [17. Future Improvements & Scaling to Millions](#17-future-improvements--scaling-to-millions)
-- [18. Submission Details](#18-submission-details)
 
 ---
 
@@ -569,16 +568,3 @@ As detailed in [`ENGINEERING_DECISIONS.md`](../ENGINEERING_DECISIONS.md), scalin
 3. **Read/Write Splitting**: Route search queries, history lookups, and reporting dashboards to MongoDB secondary read replicas (`secondaryPreferred`).
 4. **Redis Slot Bitmasks**: Cache daily doctor slot matrices in Redis bitfields, using Lua scripts for atomic test-and-set slot reservation before MongoDB insertion.
 5. **Asynchronous Message Queue**: Offload email/SMS notifications, external EMR sync, and audit log processing to BullMQ or Apache Kafka worker pools.
-
----
-
-## 18. Submission Details
-
-- **Git Repository**: [https://github.com/mohammedbilalns/emr.git](https://github.com/mohammedbilalns/emr.git)
-- **Primary Branch**: `dev` / `main`
-- **Assessment**: MERN Stack Developer Assessment — Enterprise EMR Appointment Management System
-- **Engineering Decisions Reference**: [`ENGINEERING_DECISIONS.md`](../ENGINEERING_DECISIONS.md) *(stored at project root outside repository)*
-- **API Documentation**: [`docs/api-documentation.md`](docs/api-documentation.md)
-- **Database Architecture**: [`docs/database-design.md`](docs/database-design.md)
-- **Real-Time WebSockets Architecture**: [`docs/realtime-architecture.md`](docs/realtime-architecture.md)
-- **Concurrency & Slot Engine Deep Dive**: [`docs/concurrency-and-slot-engine.md`](docs/concurrency-and-slot-engine.md)
